@@ -9,16 +9,16 @@ public class Flockers : MonoBehaviour
     // Class Fields
     //-----------------------------------------------------------------------
 
-    private Vector3 pos;
-    public GameObject seekerTarget;
-
+    public Vector3 pos;
+    [SerializeField] private GameObject seekerTarget;
+    
     //movement
     protected Vector3 acceleration;
     protected Vector3 velocity;
     protected Vector3 desired;
 
     GameObject[] obstacles;
-    Vector3 centerOfFlock;
+    
 
     public Vector3 Velocity
     {
@@ -33,7 +33,8 @@ public class Flockers : MonoBehaviour
     public float radius = 1.0f;
 
     //Access to GameManager script
-    //public GameManager gm;
+    [SerializeField] private GameObject gameManger;
+    private GameManager gm;
 
     //access to Character Controller component
     CharacterController charControl;
@@ -66,10 +67,30 @@ public class Flockers : MonoBehaviour
     public void Start()
     {
         pos = transform.position;
+        gm = gameManger.GetComponent<GameManager>();
         obstacles = GameObject.FindGameObjectsWithTag("obstacle");
         //initialize
         force = Vector3.zero;
+    }
 
+    void Update()
+    {
+        CalcSteeringForces();
+
+        //add accel to vel
+        velocity += acceleration * Time.deltaTime;
+        //velocity.y = 0; //keeping us on same plane
+                        //limit vel to max speed
+        velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
+
+        transform.forward = velocity.normalized;
+        //move the character based on velocity
+        pos += velocity * Time.deltaTime;
+        //Debug.DrawLine(transform.position, transform.position+velocity, Color.yellow);
+        //Debug.DrawLine(transform.position, transform.position+acceleration, Color.blue);
+        //reset acceleration to 0
+        acceleration = Vector3.zero;
+        transform.position = pos;
     }
 
     //-----------------------------------------------------------------------
@@ -106,11 +127,11 @@ public class Flockers : MonoBehaviour
         //reset desired velocity
         desired = Vector3.zero;
         //get radius from obstacle's script
-        float obRad = ob.GetComponent<ObstacleScript>().Radius;
+        //float obRad = ob.GetComponent<ObstacleScript>().Radius;
         //get vector from vehicle to obstacle
         Vector3 vecToCenter = ob.transform.position - pos;
         //zero-out y component (only necessary when working on X-Z plane)
-        vecToCenter.y = 0;
+        //vecToCenter.y = 0;
         //if object is out of my safe zone, ignore it
         if (Mathf.Abs(vecToCenter.magnitude) > safe)
         {
@@ -122,7 +143,7 @@ public class Flockers : MonoBehaviour
             return Vector3.zero;
         }
         //if object is not in my forward path, ignore it
-        if (Mathf.Abs(Vector3.Dot(vecToCenter, transform.right)) > obRad + radius)
+        if (Mathf.Abs(Vector3.Dot(vecToCenter, transform.right)) >  radius)
         {
             return Vector3.zero;
         }
@@ -144,6 +165,11 @@ public class Flockers : MonoBehaviour
         return desired;
     }
 
+    protected void ApplyForce(Vector3 steeringForce)
+    {
+        acceleration += steeringForce / mass;
+    }
+
     //steer away from nearist neighbor when it is too close
     public Vector3 Seperation()
     {
@@ -151,9 +177,9 @@ public class Flockers : MonoBehaviour
         float closeness = 10000f;
         int closest = -1;
         bool activate = false;
-        for (int i = 0; i < gm.Flock.Count; i++)
+        for (int i = 0; i < gm.Flock.Length; i++)
         {
-            float dis = Mathf.Abs(gm.Flock[i].pos.magnitude - pos.magnitude);
+            float dis = Mathf.Abs(gm.Flock[i].GetComponent<Flockers>().pos.magnitude - pos.magnitude);
             if (dis < closeness && dis > 0.0f)
             {
                 closeness = dis;
@@ -164,10 +190,10 @@ public class Flockers : MonoBehaviour
         //if it is too close
         if (activate)
         {
-            if (gm.Flock[closest].pos.magnitude - pos.magnitude < tooClose)//error
+            if (gm.Flock[closest].GetComponent<Flockers>().pos.magnitude - pos.magnitude < tooClose)//error
             {
                 //use the flee method to steer away
-                return Flee(gm.Flock[closest].pos) * seperationWeight;
+                return Flee(gm.Flock[closest].GetComponent<Flockers>().pos) * seperationWeight;
             }
         }
         return Vector3.zero;
@@ -185,7 +211,7 @@ public class Flockers : MonoBehaviour
         //sum the position vectores of each member of the flock --> in GameManagerGO
         ///divide by the number of members  
         //seek this point
-        return Seek(centerOfFlock) * cohesionWeight;
+        return Seek(gm.CenterOfFlock) * cohesionWeight;
     }
 
     Vector3 Seek(Vector3 targetPos)
@@ -193,7 +219,7 @@ public class Flockers : MonoBehaviour
         desired = targetPos - transform.position;
         desired = desired.normalized * maxSpeed;
         desired -= velocity;
-        desired.y = 0;
+        //desired.y = 0;
         return desired;
     }
 
@@ -202,7 +228,7 @@ public class Flockers : MonoBehaviour
         desired = targetPos - transform.position;
         desired = desired.normalized * maxSpeed;
         desired -= velocity;
-        desired.y = 0;
+        //desired.y = 0;
         return -desired;
     }
 

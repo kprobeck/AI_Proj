@@ -7,7 +7,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(CharacterController))]
 
 abstract public class Vehicle {
-
+/*
     //-----------------------------------------------------------------------
     // Class Fields
     //-----------------------------------------------------------------------
@@ -161,4 +161,5 @@ abstract public class Vehicle {
         }
             
     }
+    */
 }
