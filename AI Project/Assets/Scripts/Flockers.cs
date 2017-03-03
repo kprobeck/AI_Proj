@@ -49,16 +49,12 @@ public class Flockers : MonoBehaviour
 
     public float avoidWeight = 100.0f;
 
-    public float seperationWeight = 50.0f;
+    public float seperationWeight = 75.0f;
     public float alignmentWeight = 25.0f;
     public float cohesionWeight = 10.0f;
 
     //the distance from another ghost
     public float tooClose = 5.0f;
-
-    public bool alive = true;
-
-    public Material OriginalMaterial;
 
     //-----------------------------------------------------------------------
     // Start - No Update
@@ -86,8 +82,8 @@ public class Flockers : MonoBehaviour
         transform.forward = velocity.normalized;
         //move the character based on velocity
         pos += velocity * Time.deltaTime;
-        //Debug.DrawLine(transform.position, transform.position+velocity, Color.yellow);
-        //Debug.DrawLine(transform.position, transform.position+acceleration, Color.blue);
+        Debug.DrawLine(transform.position, transform.position+velocity, Color.yellow);
+        Debug.DrawLine(transform.position, transform.position+acceleration, Color.blue);
         //reset acceleration to 0
         acceleration = Vector3.zero;
         transform.position = pos;
@@ -102,11 +98,13 @@ public class Flockers : MonoBehaviour
         //reset value to (0, 0, 0)
         force = Vector3.zero;
         //ultimateForce = Vector3.zero;
-        pos = new Vector3(pos.x, 1f, pos.z);
+        //pos = new Vector3(pos.x, pos.y, pos.z);
 
-        
-            force += Seek(Vector3.zero) * seekWeight;//seek the center
-       
+        force += Seek(seekerTarget.transform.position) * seekWeight;//seek the center
+        force += Seperation();
+        force += Alignment();
+        force += Cohesion();
+
         for (int i = 0; i < obstacles.Length; i++)
         {
             force += AvoidObstacle(obstacles[i], safeDistance) * avoidWeight;
@@ -219,17 +217,18 @@ public class Flockers : MonoBehaviour
         desired = targetPos - transform.position;
         desired = desired.normalized * maxSpeed;
         desired -= velocity;
-        //desired.y = 0;
+        desired.y = 0;
         return desired;
     }
 
     Vector3 Flee(Vector3 targetPos)
     {
-        desired = targetPos - transform.position;
-        desired = desired.normalized * maxSpeed;
-        desired -= velocity;
-        //desired.y = 0;
-        return -desired;
+        //desired = targetPos - transform.position;
+        //desired = desired.normalized * maxSpeed;
+        //desired -= velocity;
+        desired.y = 0;
+        //return -desired;
+        return -Seek(targetPos);
     }
 
     Vector3 Pursue(Vector3 targetPos, Vector3 targetVel)
