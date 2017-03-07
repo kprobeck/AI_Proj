@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour {
 	void Update () {
         calcFlockDirection();
         calcCenterOfFlock();
+        // TODO: Implement keyboard commands to modify flocking behaviors/weights
 	}
 
     public Vector3 FlockDirection
