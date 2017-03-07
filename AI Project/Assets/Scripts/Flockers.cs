@@ -41,7 +41,7 @@ public class Flockers : MonoBehaviour
     CharacterController charControl;
 
     public float seekWeight = 75.0f;
-    public float safeDistance = 5.0f;
+    public float safeDistance = 15.0f;
 
     //Seeker's steering force (will be added to acceleration)
     private Vector3 force;
@@ -54,8 +54,8 @@ public class Flockers : MonoBehaviour
     public float alignmentWeight = 25.0f;
     public float cohesionWeight = 10.0f;
 
-    //the distance from another ghost
-    public float tooClose = 5.0f;
+    //the distance from another flocker
+    public float tooClose = 15.0f;
 
     //-----------------------------------------------------------------------
     // Start - No Update
@@ -73,6 +73,7 @@ public class Flockers : MonoBehaviour
 
     void Update()
     {
+
         CalcSteeringForces();
 
         //add accel to vel
@@ -89,6 +90,8 @@ public class Flockers : MonoBehaviour
         Debug.DrawLine(transform.position, transform.position+acceleration, Color.blue);
         //reset acceleration to 0
         acceleration = Vector3.zero;
+
+        Debug.Log(velocity);
     }
 
     //-----------------------------------------------------------------------
@@ -101,7 +104,9 @@ public class Flockers : MonoBehaviour
         force = Vector3.zero;
         //ultimateForce = Vector3.zero;
 
-        force += Seek(seekerTarget.transform.position) * seekWeight;//seek the center
+        Vector3 seekPoint = seekerTarget.transform.position + -5 * (seekerTarget.transform.forward);
+
+        force += Seek(seekPoint) * seekWeight;//seek the center
         force += Seperation();
         force += Alignment();
         force += Cohesion();
@@ -109,6 +114,18 @@ public class Flockers : MonoBehaviour
         for (int i = 0; i < obstacles.Length; i++)
         {
             force += AvoidObstacle(obstacles[i], safeDistance) * avoidObstacleWeight;
+        }
+
+        // avoid invisible walls
+        RaycastHit hit;
+        Vector3 fwd = transform.TransformDirection(Vector3.forward);
+        if (Physics.Raycast(transform.position, fwd, out hit, 10))
+        {
+            if (hit.collider.gameObject.tag == "invisibleWall")
+            {
+                force += AvoidObstacle(hit.collider.gameObject, safeDistance) * 2 * avoidObstacleWeight;
+                Debug.DrawLine(transform.position, hit.collider.gameObject.transform.position, Color.red);
+            }
         }
 
         //limited the seeker's steering force
