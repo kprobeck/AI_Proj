@@ -16,6 +16,7 @@ public class Flockers : MonoBehaviour
     protected Vector3 acceleration;
     protected Vector3 velocity;
     protected Vector3 desired;
+    private Rigidbody rigBody;
 
     GameObject[] obstacles;
     
@@ -47,7 +48,7 @@ public class Flockers : MonoBehaviour
 
     //WEIGHTING!!!!
 
-    public float avoidWeight = 100.0f;
+    public float avoidObstacleWeight = 100.0f;
 
     public float seperationWeight = 75.0f;
     public float alignmentWeight = 25.0f;
@@ -64,6 +65,7 @@ public class Flockers : MonoBehaviour
     {
         pos = transform.position;
         gm = gameManger.GetComponent<GameManager>();
+        rigBody = GetComponent<Rigidbody>();
         obstacles = GameObject.FindGameObjectsWithTag("obstacle");
         //initialize
         force = Vector3.zero;
@@ -75,6 +77,7 @@ public class Flockers : MonoBehaviour
 
         //add accel to vel
         velocity += acceleration * Time.deltaTime;
+        rigBody.AddForce(acceleration);//makes other colliders work
         //velocity.y = 0; //keeping us on same plane
                         //limit vel to max speed
         velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
@@ -86,7 +89,6 @@ public class Flockers : MonoBehaviour
         Debug.DrawLine(transform.position, transform.position+acceleration, Color.blue);
         //reset acceleration to 0
         acceleration = Vector3.zero;
-        transform.position = pos;
     }
 
     //-----------------------------------------------------------------------
@@ -98,7 +100,6 @@ public class Flockers : MonoBehaviour
         //reset value to (0, 0, 0)
         force = Vector3.zero;
         //ultimateForce = Vector3.zero;
-        //pos = new Vector3(pos.x, pos.y, pos.z);
 
         force += Seek(seekerTarget.transform.position) * seekWeight;//seek the center
         force += Seperation();
@@ -107,7 +108,7 @@ public class Flockers : MonoBehaviour
 
         for (int i = 0; i < obstacles.Length; i++)
         {
-            force += AvoidObstacle(obstacles[i], safeDistance) * avoidWeight;
+            force += AvoidObstacle(obstacles[i], safeDistance) * avoidObstacleWeight;
         }
 
         //limited the seeker's steering force
@@ -129,7 +130,7 @@ public class Flockers : MonoBehaviour
         //get vector from vehicle to obstacle
         Vector3 vecToCenter = ob.transform.position - pos;
         //zero-out y component (only necessary when working on X-Z plane)
-        //vecToCenter.y = 0;
+        vecToCenter.y = 0;
         //if object is out of my safe zone, ignore it
         if (Mathf.Abs(vecToCenter.magnitude) > safe)
         {
@@ -223,11 +224,6 @@ public class Flockers : MonoBehaviour
 
     Vector3 Flee(Vector3 targetPos)
     {
-        //desired = targetPos - transform.position;
-        //desired = desired.normalized * maxSpeed;
-        //desired -= velocity;
-        desired.y = 0;
-        //return -desired;
         return -Seek(targetPos);
     }
 
