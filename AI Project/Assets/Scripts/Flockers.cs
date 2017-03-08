@@ -105,11 +105,11 @@ public class Flockers : MonoBehaviour
         force = Vector3.zero;
         //ultimateForce = Vector3.zero;
 
-<<<<<<< HEAD
+
         Vector3 seekPoint = seekerTarget.transform.position + -10 * seekerTarget.transform.forward;
-=======
-        Vector3 seekPoint = seekerTarget.transform.position + -5 * (seekerTarget.transform.forward);
->>>>>>> 1b5cfd2cd2cbb769ca8dbf02d3b08d7b0e5eba45
+
+        //Vector3 seekPoint = seekerTarget.transform.position + -5 * (seekerTarget.transform.forward);
+
 
         force += Seek(seekPoint) * seekWeight;//seek the center
         force += Seperation();
