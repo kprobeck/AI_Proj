@@ -13,7 +13,7 @@ public class AStar : MonoBehaviour { // the behavior the character will follow, 
     // Use this for initialization
     void Start () {
         hasArrived = false;
-        path = FindPath(grid.startPoint, grid.GetEndPoint());
+        path = FindPath(grid.GetStartPoint(), grid.GetEndPoint());
     }
 	
 	// Update is called once per frame
@@ -27,9 +27,9 @@ public class AStar : MonoBehaviour { // the behavior the character will follow, 
         else // if path complete, start new path
         {
             hasArrived = false; // set arrival flag to false
-            grid.startPoint = grid.GetEndPoint(); // old end point is new start point
-            grid.DetermineEndPoint(grid.startPoint); // get a new end point
-            FindPath(grid.startPoint, grid.GetEndPoint()); // find a new path
+            grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
+            grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
+            FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
         }
 	}
 
@@ -42,7 +42,7 @@ public class AStar : MonoBehaviour { // the behavior the character will follow, 
         WorldGrid.Node endNodeRecord = null;
 
         // only 90 degree turns allowed for simplicity
-        open.Add(grid.startPoint); // add starting point
+        open.Add(grid.GetStartPoint()); // add starting point
 
         while (!open.isEmpty())
         {

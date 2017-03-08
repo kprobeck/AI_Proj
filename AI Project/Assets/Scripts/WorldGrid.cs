@@ -9,18 +9,22 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     public int height;
     public GameObject cellRepresentation; // used to visually debug the nodes on the grid
     public float representationHeight;
-    public Node startPoint;
+    public GameObject startObject;
+    private Node startPoint;
     private Node endPoint;
     private Node[,] world; // used to represent the x,z node grid
     private int arrayDimensionSize;
+    private int gridSpacing;
 
     // populate map when initialized
     void Start()
     {
         arrayDimensionSize = width / 20;
+        gridSpacing = width / arrayDimensionSize;
 
         // initialize map array size
         world = new Node[arrayDimensionSize, arrayDimensionSize];
+        startPoint = new Node(new Vector3(startObject.transform.position.x, representationHeight, startObject.transform.position.z));
 
         CreateWorldMap();
     }
@@ -33,16 +37,13 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             for (int j = 0; j < arrayDimensionSize; j++)
             {
                 // Populate the world array with Nodes
-                Node currentNode = new Node(new Vector3(i * arrayDimensionSize, representationHeight, j * arrayDimensionSize)); // create the current node 
-
+                Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing)); // create the current node 
+                
                 // create a representation of the node at the node's position
                 GameObject representation = GameObject.Instantiate(cellRepresentation, new Vector3(currentNode.position.x, currentNode.position.y, currentNode.position.z), Quaternion.identity) as GameObject;
-                
-                representation.AddComponent<Node>(); // add a node to the representation
+                             
                 representation.transform.parent = transform; // assign the parent transform
-                Node node = representation.GetComponent<Node>(); // get the node on the representation
-                node.position = currentNode.position; // set its position to the current node
-                world[j, i] = node; // add node to the world array
+                world[j, i] = currentNode; // add node to the world array
             }
         }
 
@@ -57,6 +58,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             endPoint = world[Random.Range(0, arrayDimensionSize - 1), Random.Range(0, arrayDimensionSize - 1)];
         }
         while (dist(start, endPoint) < 100);
+
+        Debug.Log("END POINT: " + endPoint.position);
     }
 
     public string GetIndexOfValue(Node node)
@@ -86,6 +89,16 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         return world;
     }
 
+    public Node GetStartPoint() // used to return start point
+    {
+        return startPoint;
+    }
+
+    public void SetStartPoint(Node pt)
+    {
+        startPoint = pt;
+    }
+
     public Node GetEndPoint() // used to return goal point
     {
         return endPoint;
@@ -98,7 +111,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     }
     
     // node class for use with the world grid
-    public class Node : MonoBehaviour
+    public class Node
     { // represents a node on the graph of the terrain, based on the priority item file
 
         public Vector3 position { get; set; } // the node's position in the world
@@ -107,6 +120,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         public Node(Vector3 pos)
         {
             position = pos;
+            isAccessible = true;
         }
 
         public Node(Vector3 pos, bool canAccess)
