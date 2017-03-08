@@ -41,7 +41,7 @@ public class Flockers : MonoBehaviour
     CharacterController charControl;
 
     public float seekWeight = 75.0f;
-    public float safeDistance = 5.0f;
+    public float safeDistance = 15.0f;
 
     //Seeker's steering force (will be added to acceleration)
     private Vector3 force;
@@ -73,6 +73,7 @@ public class Flockers : MonoBehaviour
 
     void Update()
     {
+
         CalcSteeringForces();
 
         //add accel to vel
@@ -90,6 +91,8 @@ public class Flockers : MonoBehaviour
         Debug.DrawLine(transform.position, transform.position+acceleration, Color.blue);
         //reset acceleration to 0
         acceleration = Vector3.zero;
+
+        Debug.Log(velocity);
     }
 
     //-----------------------------------------------------------------------
@@ -102,7 +105,11 @@ public class Flockers : MonoBehaviour
         force = Vector3.zero;
         //ultimateForce = Vector3.zero;
 
+<<<<<<< HEAD
         Vector3 seekPoint = seekerTarget.transform.position + -10 * seekerTarget.transform.forward;
+=======
+        Vector3 seekPoint = seekerTarget.transform.position + -5 * (seekerTarget.transform.forward);
+>>>>>>> 1b5cfd2cd2cbb769ca8dbf02d3b08d7b0e5eba45
 
         force += Seek(seekPoint) * seekWeight;//seek the center
         force += Seperation();
@@ -112,6 +119,18 @@ public class Flockers : MonoBehaviour
         for (int i = 0; i < obstacles.Length; i++)
         {
             force += AvoidObstacle(obstacles[i], safeDistance) * avoidObstacleWeight;
+        }
+
+        // avoid invisible walls
+        RaycastHit hit;
+        Vector3 fwd = transform.TransformDirection(Vector3.forward);
+        if (Physics.Raycast(transform.position, fwd, out hit, 10))
+        {
+            if (hit.collider.gameObject.tag == "invisibleWall")
+            {
+                force += AvoidObstacle(hit.collider.gameObject, safeDistance) * 2 * avoidObstacleWeight;
+                Debug.DrawLine(transform.position, hit.collider.gameObject.transform.position, Color.red);
+            }
         }
 
         //limited the seeker's steering force
