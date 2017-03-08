@@ -78,6 +78,7 @@ public class Flockers : MonoBehaviour
         //add accel to vel
         velocity += acceleration * Time.deltaTime;
         rigBody.AddForce(acceleration);//makes other colliders work
+        Debug.Log(gameObject.name + ": " + acceleration);
         //velocity.y = 0; //keeping us on same plane
                         //limit vel to max speed
         velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
@@ -101,7 +102,9 @@ public class Flockers : MonoBehaviour
         force = Vector3.zero;
         //ultimateForce = Vector3.zero;
 
-        force += Seek(seekerTarget.transform.position) * seekWeight;//seek the center
+        Vector3 seekPoint = seekerTarget.transform.position + -10 * seekerTarget.transform.forward;
+
+        force += Seek(seekPoint) * seekWeight;//seek the center
         force += Seperation();
         force += Alignment();
         force += Cohesion();
@@ -161,7 +164,7 @@ public class Flockers : MonoBehaviour
             //debug line to see if the dude is avoiding to the left
             Debug.DrawLine(pos, ob.transform.position, Color.green);
         }
-        return desired;
+        return desired * (radius - vecToCenter.magnitude);
     }
 
     protected void ApplyForce(Vector3 steeringForce)
