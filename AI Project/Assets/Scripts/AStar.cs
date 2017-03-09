@@ -2,36 +2,46 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AStar : MonoBehaviour { // the behavior the character will follow, based on provided AStar file
+public class AStar : MonoBehaviour
+{ // the behavior the character will follow, based on provided AStar file
 
     [SerializeField]
     GameObject character; // used to determine object to utilize behavior
-    public WorldGrid grid; // holds the world grid object to pathfind in
+    public GameObject gridObject; // holds the world grid object to pathfind in
+    private WorldGrid grid;
     private bool hasArrived;
     private List<WorldGrid.Node> path;
+    private bool readyToStart = false;
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         hasArrived = false;
-        path = FindPath(grid.GetStartPoint(), grid.GetEndPoint());
     }
-	
-	// Update is called once per frame
-	void Update () {
-        
-        if (!hasArrived)
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (!hasArrived && path != null)
         {
             // TODO: Seek points in path
 
         }
-        else // if path complete, start new path
+        else if (hasArrived) // if path complete, start new path
         {
             hasArrived = false; // set arrival flag to false
             grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
             grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
             FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
         }
-	}
+    }
+
+    public void canStart()
+    {
+        grid = gridObject.GetComponent<WorldGrid>();
+        path = FindPath(grid.GetStartPoint(), grid.GetEndPoint());
+        readyToStart = true;
+    }
 
     public List<WorldGrid.Node> FindPath(WorldGrid.Node start, WorldGrid.Node end)
     {
@@ -157,12 +167,7 @@ public class AStar : MonoBehaviour { // the behavior the character will follow, 
 
     public class PriorityQueue // priority queue implementation for use by the AStar script methods, based on the provided priority queue file
     {
-        List<WorldGrid.Node> pQueue; // list to hold node items
-
-        void Start ()
-        {
-            pQueue = new List<WorldGrid.Node>();
-        }
+        List<WorldGrid.Node> pQueue = new List<WorldGrid.Node>(); // list to hold node items
 
         public void Add(WorldGrid.Node item) // add the new node to the collection, ensure it is accessible
         {

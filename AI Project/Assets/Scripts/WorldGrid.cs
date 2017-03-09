@@ -10,6 +10,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     public GameObject cellRepresentation; // used to visually debug the nodes on the grid
     public float representationHeight;
     public GameObject startObject;
+    public GameObject pathfinder;
     private Node startPoint;
     private Node endPoint;
     private Node[,] world; // used to represent the x,z node grid
@@ -41,6 +42,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
                 
                 // create a representation of the node at the node's position
                 GameObject representation = GameObject.Instantiate(cellRepresentation, new Vector3(currentNode.position.x, currentNode.position.y, currentNode.position.z), Quaternion.identity) as GameObject;
+                
                              
                 representation.transform.parent = transform; // assign the parent transform
                 world[j, i] = currentNode; // add node to the world array
@@ -48,6 +50,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         }
 
         DetermineEndPoint(startPoint);
+        AStar test = pathfinder.GetComponent<AStar>();
+        test.canStart();
     }
 
     public void DetermineEndPoint(Node start)
@@ -57,7 +61,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         {
             endPoint = world[Random.Range(0, arrayDimensionSize - 1), Random.Range(0, arrayDimensionSize - 1)];
         }
-        while (dist(start, endPoint) < 100);
+        while (dist(start, endPoint) < 100 && endPoint.isAccessible);
 
         Debug.Log("END POINT: " + endPoint.position);
     }
@@ -108,6 +112,14 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     int dist(Node a, Node b)
     {
         return (int)Mathf.Ceil(Mathf.Sqrt(Mathf.Pow(a.position.x - b.position.x, 2) + Mathf.Pow(a.position.z - b.position.z, 2)));
+    }
+
+    private void DetermineAccessibility(Node n) // set node to inaccessible if it is located in areas that are impossible to reach
+    {
+        // due to the grid being generated without knowledge of the terrain, this will be hard-coded for simplicity
+        List<Vector3> inaccessibleLocations = new List<Vector3>();
+
+
     }
     
     // node class for use with the world grid
