@@ -25,22 +25,33 @@ public class AStar : MonoBehaviour
         if (!hasArrived && path != null)
         {
             // TODO: Seek points in path
-
+            /* ScriptWithSeeking seek = character.GetComponent<ScriptWithSeeking>();
+               seek.Seek(path); -- this function could take the whole path and handle seeking each point 
+               
+               In seek script, once character reaches goal:
+               AStar pathfinder = character.GetComponent<AStar>(); // the seek script would need a public GameObject Reference to the player (identical to this script)
+               pathfinder.HasReachedGoal(); // handles setting a new target, reruns A*, returns new path for seeking
+            */ 
         }
         else if (hasArrived) // if path complete, start new path
         {
             hasArrived = false; // set arrival flag to false
             grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
             grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
-            FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
+            path = FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
         }
     }
 
-    public void canStart()
+    public void CanStart()
     {
         grid = gridObject.GetComponent<WorldGrid>();
         path = FindPath(grid.GetStartPoint(), grid.GetEndPoint());
         readyToStart = true;
+    }
+
+    public void HasReachedGoal()
+    {
+        hasArrived = true;
     }
 
     public List<WorldGrid.Node> FindPath(WorldGrid.Node start, WorldGrid.Node end)
@@ -48,11 +59,16 @@ public class AStar : MonoBehaviour
         // open queue and setup for algorithm
         PriorityQueue open = new PriorityQueue();
         List<WorldGrid.Node> closed = new List<WorldGrid.Node>();
+
+        // end of path cost
+        double endNodeHeuristic = 0;
         WorldGrid.Node endNode = null;
         WorldGrid.Node endNodeRecord = null;
 
-        // only 90 degree turns allowed for simplicity
-        open.Add(grid.GetStartPoint()); // add starting point
+
+        // determine estimated cost (distance) for path
+        start.EstTotalCost = GetEstCost(start, end);
+        open.Add(start); // add starting point
 
         while (!open.isEmpty())
         {
@@ -61,13 +77,11 @@ public class AStar : MonoBehaviour
 
             if (current.position.Equals(end)) // goal met
             {
-                hasArrived = true; // flag arrival
-
                 // send list back
                 return closed;
             }
 
-            // determine legal moves from current
+            // determine legal moves from current -- only 90 degree turns allowed for simplicity
             WorldGrid.Node[] potentialMoves = GetNextMoves(current);
 
             for (int i = 0; i < potentialMoves.Length; i++)
@@ -81,6 +95,9 @@ public class AStar : MonoBehaviour
                 // get move as end node
                 endNode = currentMove;
 
+                // add the move's cost to the total
+                double endNodeCost = current.CostSoFar + endNode.GridCost; // each node's cost is the same
+
                 if (closed.Contains(endNode))
                 {
                     // get the index of the node
@@ -88,12 +105,18 @@ public class AStar : MonoBehaviour
 
                     if (index != -1) // should pass if closed contains endnode
                     {
-                        // would determine if costs are different here
-                        // TODO: Determine if node would be closest to end point
-                        continue;
+                        if (closed[index].CostSoFar <= endNodeCost)
+                        {
+                            continue; // current move is longer
+                        }
+                        else
+                        {
+                            // current move is shorter than node in closed list
+                            endNodeRecord = closed[index];
+                            closed.RemoveAt(index);
+                            endNodeHeuristic = endNodeRecord.GridCost - endNodeRecord.CostSoFar; // keeps from being reset by estimation method
+                        }
                     }
-
-                    endNodeRecord = closed[index]; // record last end Node
                 }
                 else
                 {
@@ -103,16 +126,25 @@ public class AStar : MonoBehaviour
 
                         if (index != -1)
                         {
-                            // would determine if costs are different here
-                            // TODO: Determine if node would be closest to end point
-                            continue;
+                            if (open.Get(index).CostSoFar <= endNodeCost)
+                            {
+                                continue; // current move is longer
+                            }
                         }
 
                         endNodeRecord = open.Get(index); // record last end Node
+                        endNodeHeuristic = endNodeRecord.GridCost - endNodeRecord.CostSoFar; // keeps from being reset by estimation method
                     }
                     else // unvisited Node
                     {
                         endNodeRecord = currentMove; // record last end Node
+
+                        // get cost estimate from potential move
+                        endNodeHeuristic = GetEstCost(currentMove, end);
+
+                        // update costs
+                        endNodeRecord.CostSoFar = endNodeCost;
+                        endNodeRecord.EstTotalCost = endNodeCost + endNodeHeuristic;
 
                         // add to open queue
                         if (!open.Contains(endNodeRecord))
@@ -122,9 +154,12 @@ public class AStar : MonoBehaviour
                     }
                 }
 
-                // done with current move
-                open.Remove(currentMove);
-                closed.Add(currentMove);
+                // done evaluating current moves
+                if (i == potentialMoves.Length - 1)
+                {
+                    open.Remove(current);
+                    closed.Add(current);
+                }
             } // end for
         } // end while
 
@@ -165,19 +200,33 @@ public class AStar : MonoBehaviour
         return moves;
     }
 
+    private double GetEstCost(WorldGrid.Node current, WorldGrid.Node goal)
+    {
+        return Mathf.Sqrt(Mathf.Pow((current.position.x - goal.position.x), 2) + Mathf.Pow((current.position.y - goal.position.y), 2)) * 3;
+    }
+
     public class PriorityQueue // priority queue implementation for use by the AStar script methods, based on the provided priority queue file
     {
         List<WorldGrid.Node> pQueue = new List<WorldGrid.Node>(); // list to hold node items
 
         public void Add(WorldGrid.Node item) // add the new node to the collection, ensure it is accessible
         {
-            if (item.isAccessible) // add item only if accessible 
+            if (pQueue.Count == 0 && item.isAccessible) // add item only if accessible 
             {
                 pQueue.Add(item);
                 return;
             }
 
-            // no costs associated with nodes, would handle here
+            // insert the new item in front of a value that is equivalent or more expensive
+            for (int i = 0; i < pQueue.Count; i++)
+            {
+                WorldGrid.Node currentNode = pQueue[i];
+                if (currentNode.EstTotalCost >= item.EstTotalCost)
+                {
+                    pQueue.Insert(i, item);
+                    break;
+                }
+            }
         }
 
         public WorldGrid.Node Remove()

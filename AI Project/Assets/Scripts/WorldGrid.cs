@@ -42,8 +42,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
                 
                 // create a representation of the node at the node's position
                 GameObject representation = GameObject.Instantiate(cellRepresentation, new Vector3(currentNode.position.x, currentNode.position.y, currentNode.position.z), Quaternion.identity) as GameObject;
-                
-                             
+
+                DetermineAccessibility(currentNode);                             
                 representation.transform.parent = transform; // assign the parent transform
                 world[j, i] = currentNode; // add node to the world array
             }
@@ -51,7 +51,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
 
         DetermineEndPoint(startPoint);
         AStar test = pathfinder.GetComponent<AStar>();
-        test.canStart();
+        test.CanStart();
     }
 
     public void DetermineEndPoint(Node start)
@@ -118,8 +118,30 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     {
         // due to the grid being generated without knowledge of the terrain, this will be hard-coded for simplicity
         List<Vector3> inaccessibleLocations = new List<Vector3>();
+        inaccessibleLocations.Add(new Vector3(220, 110, 220));
+        inaccessibleLocations.Add(new Vector3(220, 110, 200));
+        inaccessibleLocations.Add(new Vector3(180, 110, 40));
+        inaccessibleLocations.Add(new Vector3(160, 110, 40));
+        inaccessibleLocations.Add(new Vector3(160, 110, 60));
+        inaccessibleLocations.Add(new Vector3(160, 110, 80));
+        inaccessibleLocations.Add(new Vector3(140, 110, 80));
+        inaccessibleLocations.Add(new Vector3(120, 110, 80));
+        inaccessibleLocations.Add(new Vector3(160, 110, 100));
+        inaccessibleLocations.Add(new Vector3(140, 110, 100));
+        inaccessibleLocations.Add(new Vector3(120, 110, 100));
+        inaccessibleLocations.Add(new Vector3(100, 110, 100));
+        inaccessibleLocations.Add(new Vector3(120, 110, 120));
+        inaccessibleLocations.Add(new Vector3(100, 110, 120));
+        inaccessibleLocations.Add(new Vector3(60, 110, 120));
+        inaccessibleLocations.Add(new Vector3(40, 110, 120));
+        inaccessibleLocations.Add(new Vector3(40, 110, 140));
+        inaccessibleLocations.Add(new Vector3(60, 110, 140));
+        inaccessibleLocations.Add(new Vector3(100, 110, 140));
 
-
+        if (n.position.x == 0 || n.position.z == 0 || n.position.x == 20 || n.position.z == 20 || inaccessibleLocations.Contains(n.position))
+        {
+            n.isAccessible = false;
+        }
     }
     
     // node class for use with the world grid
@@ -128,17 +150,44 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
 
         public Vector3 position { get; set; } // the node's position in the world
         public bool isAccessible { get; set; } // flag if the node can be accessed by the a* AI
+        private double costSoFar;
+        private double estTotalCost;
+        private int gridCost; // all nodes cost the same if accessible
 
         public Node(Vector3 pos)
         {
             position = pos;
             isAccessible = true;
+            costSoFar = 0.0;
+            estTotalCost = 0.0;
+            gridCost = 1;
         }
 
         public Node(Vector3 pos, bool canAccess)
         {
             position = pos;
             isAccessible = canAccess;
+            costSoFar = 0.0;
+            estTotalCost = 0.0;
+            gridCost = 1;
+        }
+
+        // properties for node costs
+        public double CostSoFar
+        {
+            get { return costSoFar; }
+            set { costSoFar = value; }
+        }
+
+        public double EstTotalCost
+        {
+            get { return estTotalCost; }
+            set { estTotalCost = value; }
+        }
+
+        public int GridCost
+        {
+            get { return gridCost; }
         }
 
         // Method to compare location values of nodes
