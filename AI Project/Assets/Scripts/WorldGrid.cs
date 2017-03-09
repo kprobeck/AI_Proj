@@ -14,6 +14,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     private Node startPoint;
     private Node endPoint;
     private Node[,] world; // used to represent the x,z node grid
+    List<Vector3> inaccessibleLocations; // represent positions of nodes that can't be reached
     private int arrayDimensionSize;
     private int gridSpacing;
 
@@ -26,6 +27,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         // initialize map array size
         world = new Node[arrayDimensionSize, arrayDimensionSize];
         startPoint = new Node(new Vector3(startObject.transform.position.x, representationHeight, startObject.transform.position.z));
+
+        GetInaccessibleNodeList();
 
         CreateWorldMap();
     }
@@ -83,6 +86,31 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         return "1, -1";
     }
 
+    public void GetInaccessibleNodeList()
+    {
+        // due to the grid being generated without knowledge of the terrain, this will be hard-coded for simplicity
+        inaccessibleLocations = new List<Vector3>();
+        inaccessibleLocations.Add(new Vector3(220, 110, 220));
+        inaccessibleLocations.Add(new Vector3(220, 110, 200));
+        inaccessibleLocations.Add(new Vector3(180, 110, 40));
+        inaccessibleLocations.Add(new Vector3(160, 110, 40));
+        inaccessibleLocations.Add(new Vector3(160, 110, 60));
+        inaccessibleLocations.Add(new Vector3(160, 110, 80));
+        inaccessibleLocations.Add(new Vector3(140, 110, 80));
+        inaccessibleLocations.Add(new Vector3(120, 110, 80));
+        inaccessibleLocations.Add(new Vector3(160, 110, 100));
+        inaccessibleLocations.Add(new Vector3(140, 110, 100));
+        inaccessibleLocations.Add(new Vector3(120, 110, 100));
+        inaccessibleLocations.Add(new Vector3(100, 110, 100));
+        inaccessibleLocations.Add(new Vector3(120, 110, 120));
+        inaccessibleLocations.Add(new Vector3(100, 110, 120));
+        inaccessibleLocations.Add(new Vector3(60, 110, 120));
+        inaccessibleLocations.Add(new Vector3(40, 110, 120));
+        inaccessibleLocations.Add(new Vector3(40, 110, 140));
+        inaccessibleLocations.Add(new Vector3(60, 110, 140));
+        inaccessibleLocations.Add(new Vector3(100, 110, 140));
+    }
+
     public int GetDimensionSize()
     {
         return arrayDimensionSize;
@@ -115,29 +143,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     }
 
     private void DetermineAccessibility(Node n) // set node to inaccessible if it is located in areas that are impossible to reach
-    {
-        // due to the grid being generated without knowledge of the terrain, this will be hard-coded for simplicity
-        List<Vector3> inaccessibleLocations = new List<Vector3>();
-        inaccessibleLocations.Add(new Vector3(220, 110, 220));
-        inaccessibleLocations.Add(new Vector3(220, 110, 200));
-        inaccessibleLocations.Add(new Vector3(180, 110, 40));
-        inaccessibleLocations.Add(new Vector3(160, 110, 40));
-        inaccessibleLocations.Add(new Vector3(160, 110, 60));
-        inaccessibleLocations.Add(new Vector3(160, 110, 80));
-        inaccessibleLocations.Add(new Vector3(140, 110, 80));
-        inaccessibleLocations.Add(new Vector3(120, 110, 80));
-        inaccessibleLocations.Add(new Vector3(160, 110, 100));
-        inaccessibleLocations.Add(new Vector3(140, 110, 100));
-        inaccessibleLocations.Add(new Vector3(120, 110, 100));
-        inaccessibleLocations.Add(new Vector3(100, 110, 100));
-        inaccessibleLocations.Add(new Vector3(120, 110, 120));
-        inaccessibleLocations.Add(new Vector3(100, 110, 120));
-        inaccessibleLocations.Add(new Vector3(60, 110, 120));
-        inaccessibleLocations.Add(new Vector3(40, 110, 120));
-        inaccessibleLocations.Add(new Vector3(40, 110, 140));
-        inaccessibleLocations.Add(new Vector3(60, 110, 140));
-        inaccessibleLocations.Add(new Vector3(100, 110, 140));
-
+    { 
         if (n.position.x == 0 || n.position.z == 0 || n.position.x == 20 || n.position.z == 20 || inaccessibleLocations.Contains(n.position))
         {
             n.isAccessible = false;
