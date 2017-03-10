@@ -5,13 +5,15 @@ using UnityEngine;
 public class AStar : MonoBehaviour
 { // the behavior the character will follow, based on provided AStar file
 
-    [SerializeField]
-    GameObject character; // used to determine object to utilize behavior
     public GameObject gridObject; // holds the world grid object to pathfind in
     private WorldGrid grid;
     private bool hasArrived;
     private List<WorldGrid.Node> path;
     private bool readyToStart = false;
+    private int currentPathNum; //node in list
+    [SerializeField]
+    private float nodeArriveDistance;
+
 
     // Use this for initialization
     void Start()
@@ -22,23 +24,46 @@ public class AStar : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!hasArrived && path != null)
+        if (readyToStart)
         {
-            // TODO: Seek points in path
-            /* ScriptWithSeeking seek = character.GetComponent<ScriptWithSeeking>();
-               seek.Seek(path); -- this function could take the whole path and handle seeking each point 
-               
-               In seek script, once character reaches goal:
-               AStar pathfinder = character.GetComponent<AStar>(); // the seek script would need a public GameObject Reference to the player (identical to this script)
-               pathfinder.HasReachedGoal(); // handles setting a new target, reruns A*, returns new path for seeking
-            */ 
-        }
-        else if (hasArrived) // if path complete, start new path
-        {
-            hasArrived = false; // set arrival flag to false
-            grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
-            grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
-            path = FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
+            if (!hasArrived && path != null)
+            {
+                // TODO: Seek points in path
+                /* ScriptWithSeeking seek = character.GetComponent<ScriptWithSeeking>();
+                   seek.Seek(path); -- this function could take the whole path and handle seeking each point 
+                */
+                Vector3 Displace = path[currentPathNum].position - transform.position;
+                if (Displace.magnitude <= nodeArriveDistance)
+                {
+                    if (currentPathNum >= path.Count - 1)
+                    {
+                        /*
+                  In seek script, once character reaches goal:
+                  AStar pathfinder = character.GetComponent<AStar>(); // the seek script would need a public GameObject Reference to the player (identical to this script)
+                  pathfinder.HasReachedGoal(); // handles setting a new target, reruns A*, returns new path for seeking
+                    */
+                        HasReachedGoal();
+                        return;
+                    }
+                    else
+                    {
+                        currentPathNum++;
+                    }
+
+                }
+                Displace.y = 0;
+                GetComponent<Rigidbody>().AddForce(Displace.normalized * 12);
+            }
+            else if (hasArrived) // if path complete, start new path
+            {
+                hasArrived = false; // set arrival flag to false
+                grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
+                grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
+                path = FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
+                currentPathNum = 0;
+            }
+            Debug.Log(path);
+            Debug.DrawLine(transform.position, path[currentPathNum].position, Color.red);
         }
     }
 
@@ -54,7 +79,7 @@ public class AStar : MonoBehaviour
         hasArrived = true;
     }
 
-    public List<WorldGrid.Node> FindPath(WorldGrid.Node start, WorldGrid.Node end)
+    public List<WorldGrid.Node> FindPath(WorldGrid.Node start, WorldGrid.Node end)//A*
     {
         // open queue and setup for algorithm
         PriorityQueue open = new PriorityQueue();
@@ -86,6 +111,7 @@ public class AStar : MonoBehaviour
 
             for (int i = 0; i < potentialMoves.Length; i++)
             {
+                //Debug.Log(i + " : " + potentialMoves.Length);
                 WorldGrid.Node currentMove = potentialMoves[i];
                 if (currentMove.position.x < 0 || currentMove.position.y < 0 || !currentMove.isAccessible)
                 {
@@ -149,6 +175,7 @@ public class AStar : MonoBehaviour
                         // add to open queue
                         if (!open.Contains(endNodeRecord))
                         {
+                            Debug.Log("add to open queue endNodeRecord : " + endNodeRecord.position);
                             open.Add(endNodeRecord);
                         }
                     }
@@ -157,12 +184,13 @@ public class AStar : MonoBehaviour
                 // done evaluating current moves
                 if (i == potentialMoves.Length - 1)
                 {
+                    Debug.Log("done evaluating current: " + current.position);
                     open.Remove(current);
                     closed.Add(current);
                 }
             } // end for
         } // end while
-
+        Debug.Log("No More in Open");
         // check if reached end or error
         if (!endNode.position.Equals(end.position))
         {
@@ -196,7 +224,7 @@ public class AStar : MonoBehaviour
         moves[1] = indexA > 0 ? gridMap[indexA - 1, indexB] : illegalNode;
         moves[2] = indexB < (grid.GetDimensionSize() - 2) ? gridMap[indexA, indexB + 1] : illegalNode; // dimension size - 2 because size - 1 = last entry and adding one would go out of bounds
         moves[3] = indexA < (grid.GetDimensionSize() - 2) ? gridMap[indexA + 1, indexB] : illegalNode;
-
+        Debug.Log(moves[0].position + ", " + moves[1].position + ", " + moves[2].position + ", " + moves[3].position);
         return moves;
     }
 

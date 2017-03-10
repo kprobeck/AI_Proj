@@ -79,7 +79,7 @@ public class Flockers : MonoBehaviour
         //add accel to vel
         velocity += acceleration * Time.deltaTime;
         rigBody.AddForce(acceleration);//makes other colliders work
-        Debug.Log(gameObject.name + ": " + acceleration);
+        //Debug.Log(gameObject.name + ": " + acceleration);
         //velocity.y = 0; //keeping us on same plane
                         //limit vel to max speed
         velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
@@ -92,7 +92,7 @@ public class Flockers : MonoBehaviour
         //reset acceleration to 0
         acceleration = Vector3.zero;
 
-        Debug.Log(velocity);
+        //Debug.Log(velocity);
     }
 
     //-----------------------------------------------------------------------
