@@ -40,7 +40,7 @@ public class Flockers : MonoBehaviour
     //access to Character Controller component
     CharacterController charControl;
 
-    public float seekWeight = 75.0f;
+    private float seekWeight = 50.0f;
     public float safeDistance = 15.0f;
 
     //Seeker's steering force (will be added to acceleration)
@@ -48,14 +48,14 @@ public class Flockers : MonoBehaviour
 
     //WEIGHTING!!!!
 
-    public float avoidObstacleWeight = 100.0f;
+    private float avoidObstacleWeight = 100.0f;
 
-    public float seperationWeight = 75.0f;
-    public float alignmentWeight = 25.0f;
-    public float cohesionWeight = 10.0f;
+    private float seperationWeight = 25.0f;
+    public float alignmentWeight = 10.0f;
+    private float cohesionWeight = 25.0f;
 
     //the distance from another ghost
-    public float tooClose = 5.0f;
+    public float tooClose = 10.0f;
 
     //-----------------------------------------------------------------------
     // Start - No Update
