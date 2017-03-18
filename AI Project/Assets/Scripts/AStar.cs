@@ -9,7 +9,6 @@ public class AStar : MonoBehaviour
     private WorldGrid grid;
     private bool hasArrived;
     private List<WorldGrid.Node> path;
-    private bool readyToStart = false;
     private int currentPathNum; //node in list
     [SerializeField]
     private float nodeArriveDistance;
@@ -24,46 +23,41 @@ public class AStar : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (readyToStart)
+        if (!hasArrived && path != null)
         {
-            if (!hasArrived && path != null)
+            // TODO: Seek points in path
+            /* ScriptWithSeeking seek = character.GetComponent<ScriptWithSeeking>();
+               seek.Seek(path); -- this function could take the whole path and handle seeking each point 
+            */
+            Vector3 Displace = path[currentPathNum].position - transform.position;
+            if (Displace.magnitude <= nodeArriveDistance)
             {
-                // TODO: Seek points in path
-                /* ScriptWithSeeking seek = character.GetComponent<ScriptWithSeeking>();
-                   seek.Seek(path); -- this function could take the whole path and handle seeking each point 
-                */
-                Vector3 Displace = path[currentPathNum].position - transform.position;
-                if (Displace.magnitude <= nodeArriveDistance)
+                if (currentPathNum >= path.Count - 1)
                 {
-                    if (currentPathNum >= path.Count - 1)
-                    {
-                        /*
-                  In seek script, once character reaches goal:
-                  AStar pathfinder = character.GetComponent<AStar>(); // the seek script would need a public GameObject Reference to the player (identical to this script)
-                  pathfinder.HasReachedGoal(); // handles setting a new target, reruns A*, returns new path for seeking
-                    */
-                        HasReachedGoal();
-                        return;
-                    }
-                    else
-                    {
-                        currentPathNum++;
-                    }
-
+                    /*
+              In seek script, once character reaches goal:
+              AStar pathfinder = character.GetComponent<AStar>(); // the seek script would need a public GameObject Reference to the player (identical to this script)
+              pathfinder.HasReachedGoal(); // handles setting a new target, reruns A*, returns new path for seeking
+                */
+                    HasReachedGoal();
+                    return;
                 }
-                Displace.y = 0;
-                GetComponent<Rigidbody>().AddForce(Displace.normalized * 12);
+                else
+                {
+                    currentPathNum++;
+                }
+
             }
-            else if (hasArrived) // if path complete, start new path
-            {
-                hasArrived = false; // set arrival flag to false
-                grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
-                grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
-                path = FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
-                currentPathNum = 0;
-            }
-            Debug.Log(path);
-            Debug.DrawLine(transform.position, path[currentPathNum].position, Color.red);
+            Displace.y = 0;
+            GetComponent<Rigidbody>().AddForce(Displace.normalized * 12);
+        }
+        else if (hasArrived) // if path complete, start new path
+        {
+            hasArrived = false; // set arrival flag to false
+            grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
+            grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
+            path = FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
+            currentPathNum = 0;
         }
     }
 
@@ -71,7 +65,6 @@ public class AStar : MonoBehaviour
     {
         grid = gridObject.GetComponent<WorldGrid>();
         path = FindPath(grid.GetStartPoint(), grid.GetEndPoint());
-        readyToStart = true;
     }
 
     public void HasReachedGoal()
@@ -100,83 +93,92 @@ public class AStar : MonoBehaviour
             // grab first entry
             WorldGrid.Node current = open.Get(0);
 
-            if (current.position.Equals(end)) // goal met
+            if (current.position.Equals(end.position)) // goal met
             {
+                // end node is not in the returned list, add it here to get seeker to seek it
+                if (!closed.Contains(current))
+                {
+                    closed.Add(current);
+                }
+
+                // start node is in the closed list, not needed for seeking, remove here
+                if (closed.Contains(start))
+                {
+                    closed.Remove(start);
+                }
+
                 // send list back
                 return closed;
             }
 
             // determine legal moves from current -- only 90 degree turns allowed for simplicity
             WorldGrid.Node[] potentialMoves = GetNextMoves(current);
+            open.Clear();
 
             for (int i = 0; i < potentialMoves.Length; i++)
             {
-                //Debug.Log(i + " : " + potentialMoves.Length);
                 WorldGrid.Node currentMove = potentialMoves[i];
-                if (currentMove.position.x < 0 || currentMove.position.y < 0 || !currentMove.isAccessible)
+                if (!(currentMove.position.x < 0 || currentMove.position.y < 0 || !currentMove.isAccessible))
                 {
-                    continue; // move to next as this node is illegal
-                }
+                    // get move as end node
+                    endNode = currentMove;
 
-                // get move as end node
-                endNode = currentMove;
+                    // add the move's cost to the total
+                    double endNodeCost = current.CostSoFar + endNode.GridCost; // each node's cost is the same
 
-                // add the move's cost to the total
-                double endNodeCost = current.CostSoFar + endNode.GridCost; // each node's cost is the same
-
-                if (closed.Contains(endNode))
-                {
-                    // get the index of the node
-                    int index = closed.IndexOf(endNode);
-
-                    if (index != -1) // should pass if closed contains endnode
+                    if (closed.Contains(endNode))
                     {
-                        if (closed[index].CostSoFar <= endNodeCost)
-                        {
-                            continue; // current move is longer
-                        }
-                        else
-                        {
-                            // current move is shorter than node in closed list
-                            endNodeRecord = closed[index];
-                            closed.RemoveAt(index);
-                            endNodeHeuristic = endNodeRecord.GridCost - endNodeRecord.CostSoFar; // keeps from being reset by estimation method
-                        }
-                    }
-                }
-                else
-                {
-                    if (open.Contains(endNode))
-                    {
-                        int index = open.IndexOf(endNode);
+                        // get the index of the node
+                        int index = closed.IndexOf(endNode);
 
-                        if (index != -1)
+                        if (index != -1) // should pass if closed contains endnode
                         {
-                            if (open.Get(index).CostSoFar <= endNodeCost)
+                            if (closed[index].CostSoFar <= endNodeCost)
                             {
-                                continue; // current move is longer
+                                // current move is longer
+                            }
+                            else
+                            {
+                                // current move is shorter than node in closed list
+                                endNodeRecord = closed[index];
+                                closed.RemoveAt(index);
+                                endNodeHeuristic = endNodeRecord.GridCost - endNodeRecord.CostSoFar; // keeps from being reset by estimation method
                             }
                         }
-
-                        endNodeRecord = open.Get(index); // record last end Node
-                        endNodeHeuristic = endNodeRecord.GridCost - endNodeRecord.CostSoFar; // keeps from being reset by estimation method
                     }
-                    else // unvisited Node
+                    else
                     {
-                        endNodeRecord = currentMove; // record last end Node
-
-                        // get cost estimate from potential move
-                        endNodeHeuristic = GetEstCost(currentMove, end);
-
-                        // update costs
-                        endNodeRecord.CostSoFar = endNodeCost;
-                        endNodeRecord.EstTotalCost = endNodeCost + endNodeHeuristic;
-
-                        // add to open queue
-                        if (!open.Contains(endNodeRecord))
+                        if (open.Contains(endNode))
                         {
-                            Debug.Log("add to open queue endNodeRecord : " + endNodeRecord.position);
-                            open.Add(endNodeRecord);
+                            int index = open.IndexOf(endNode);
+
+                            if (index != -1)
+                            {
+                                if (open.Get(index).CostSoFar <= endNodeCost)
+                                {
+                                    // current move is longer
+                                }
+                            }
+
+                            endNodeRecord = open.Get(index); // record last end Node
+                            endNodeHeuristic = endNodeRecord.GridCost - endNodeRecord.CostSoFar; // keeps from being reset by estimation method
+                        }
+                        else // unvisited Node
+                        {
+                            endNodeRecord = currentMove; // record last end Node
+
+                            // get cost estimate from potential move
+                            endNodeHeuristic = GetEstCost(currentMove, end);
+
+                            // update costs
+                            endNodeRecord.CostSoFar = endNodeCost;
+                            endNodeRecord.EstTotalCost = endNodeCost + endNodeHeuristic;
+
+                            // add to open queue
+                            if (!open.Contains(endNodeRecord))
+                            {
+                                open.Add(endNodeRecord);
+                            }
                         }
                     }
                 }
@@ -184,20 +186,34 @@ public class AStar : MonoBehaviour
                 // done evaluating current moves
                 if (i == potentialMoves.Length - 1)
                 {
-                    Debug.Log("done evaluating current: " + current.position);
                     open.Remove(current);
                     closed.Add(current);
+                    endNode = current;
                 }
             } // end for
         } // end while
-        Debug.Log("No More in Open");
+
         // check if reached end or error
         if (!endNode.position.Equals(end.position))
         {
-            return null;
+            // if error, try to get new end point and path
+            grid.DetermineEndPoint(start);
+            List<WorldGrid.Node> newPath = FindPath(start, grid.GetEndPoint());
+            return newPath;
         }
         else
         {
+            // end node is not in the returned list, add it here to get seeker to seek it
+            if (!closed.Contains(endNode))
+            {
+                closed.Add(endNode);
+            }
+
+            // start node is in the closed list, not needed for seeking, remove here
+            if (closed.Contains(start))
+            {
+                closed.Remove(start);
+            }
             return closed;
         }
     }
@@ -216,6 +232,7 @@ public class AStar : MonoBehaviour
 
         // create default illegal node
         WorldGrid.Node illegalNode = new WorldGrid.Node(new Vector3(-1, -1, -1));
+        illegalNode.isAccessible = false;
 
         WorldGrid.Node[,] gridMap = grid.GetMap();
 
@@ -224,7 +241,7 @@ public class AStar : MonoBehaviour
         moves[1] = indexA > 0 ? gridMap[indexA - 1, indexB] : illegalNode;
         moves[2] = indexB < (grid.GetDimensionSize() - 2) ? gridMap[indexA, indexB + 1] : illegalNode; // dimension size - 2 because size - 1 = last entry and adding one would go out of bounds
         moves[3] = indexA < (grid.GetDimensionSize() - 2) ? gridMap[indexA + 1, indexB] : illegalNode;
-        Debug.Log(moves[0].position + ", " + moves[1].position + ", " + moves[2].position + ", " + moves[3].position);
+
         return moves;
     }
 
@@ -290,13 +307,19 @@ public class AStar : MonoBehaviour
         // get the value at defined index
         public WorldGrid.Node Get(int i)
         {
-            return pQueue[i];
+            return Remove();
         }
 
         // get index of specific Node
         public int IndexOf(WorldGrid.Node node)
         {
             return pQueue.IndexOf(node);
+        }
+
+        // clear list items for new move consideration
+        public void Clear()
+        {
+            pQueue.Clear();
         }
     }
 }

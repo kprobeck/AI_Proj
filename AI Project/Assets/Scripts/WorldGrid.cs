@@ -63,8 +63,9 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         do
         {
             endPoint = world[Random.Range(0, arrayDimensionSize - 1), Random.Range(0, arrayDimensionSize - 1)];
+            DetermineAccessibility(endPoint);
         }
-        while (dist(start, endPoint) < 100 && endPoint.isAccessible);
+        while (dist(start, endPoint) < 100 || !endPoint.isAccessible);
 
         Debug.Log("END POINT: " + endPoint.position);
     }
