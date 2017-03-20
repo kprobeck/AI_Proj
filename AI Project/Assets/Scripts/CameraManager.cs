@@ -7,6 +7,7 @@ public class CameraManager : MonoBehaviour {
     [SerializeField] private Camera worldCamera;
     [SerializeField] private Camera firstPersonCamera;
     [SerializeField] private Camera thirdPersonCamera;
+    [SerializeField] private Camera topDownCamera;
     private List<Camera> cameras;
     private int enabledIndex;
 
@@ -15,8 +16,9 @@ public class CameraManager : MonoBehaviour {
         worldCamera.enabled = false;
         firstPersonCamera.enabled = true;
         thirdPersonCamera.enabled = false;
+        topDownCamera.enabled = false;
 
-        cameras = new List<Camera> { worldCamera, firstPersonCamera, thirdPersonCamera };
+        cameras = new List<Camera> { worldCamera, firstPersonCamera, thirdPersonCamera, topDownCamera };
         enabledIndex = 1; // Index of first person camera
     }
 	

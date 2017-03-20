@@ -45,11 +45,12 @@ public class AStar : MonoBehaviour
                 else
                 {
                     currentPathNum++;
+                    Debug.Log("new current path num: " + currentPathNum);
                 }
 
             }
             Displace.y = 0;
-            GetComponent<Rigidbody>().AddForce(Displace.normalized * 12);
+            GetComponent<Rigidbody>().AddForce(Displace.normalized * 75);
         }
         else if (hasArrived) // if path complete, start new path
         {
