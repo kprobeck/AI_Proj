@@ -9,7 +9,9 @@ public class AStar : MonoBehaviour
     private WorldGrid grid;
     private bool hasArrived;
     private List<WorldGrid.Node> path;
-    private int currentPathNum; //node in list
+    WorldGrid.Node[,] gridMap;
+    private List<Vector3> blockedNodes;
+    private int currentPathNum = 0; //node in list
     [SerializeField]
     private float nodeArriveDistance;
 
@@ -25,31 +27,27 @@ public class AStar : MonoBehaviour
     {
         if (!hasArrived && path != null)
         {
-            // TODO: Seek points in path
-            /* ScriptWithSeeking seek = character.GetComponent<ScriptWithSeeking>();
-               seek.Seek(path); -- this function could take the whole path and handle seeking each point 
-            */
-            Vector3 Displace = path[currentPathNum].position - transform.position;
-            if (Displace.magnitude <= nodeArriveDistance)
+            drawPath();
+            // Seek points in path
+            /*Get direction to point, arrive in a box*/
+            Vector3 Displace = new Vector3(path[currentPathNum].position.x - transform.position.x, path[currentPathNum].position.y - transform.position.y, path[currentPathNum].position.z - transform.position.z);
+            Vector3 currTargetPos = path[currentPathNum].position;
+            if ((transform.position.x <= currTargetPos.x + nodeArriveDistance && transform.position.x >= currTargetPos.x - nodeArriveDistance) && (transform.position.z <= currTargetPos.z + nodeArriveDistance && transform.position.z >= currTargetPos.z - nodeArriveDistance))//Displace.magnitude <= nodeArriveDistance)
             {
                 if (currentPathNum >= path.Count - 1)
                 {
-                    /*
-              In seek script, once character reaches goal:
-              AStar pathfinder = character.GetComponent<AStar>(); // the seek script would need a public GameObject Reference to the player (identical to this script)
-              pathfinder.HasReachedGoal(); // handles setting a new target, reruns A*, returns new path for seeking
-                */
+                    // notify of reaching last point
                     HasReachedGoal();
                     return;
                 }
                 else
                 {
+                    //Debug.Log("Arrived at [" + path[currentPathNum].position.x + ", " + path[currentPathNum].position.y + ", " + path[currentPathNum].position.z + "]");
                     currentPathNum++;
-                    Debug.Log("new current path num: " + currentPathNum);
                 }
 
             }
-            Displace.y = 0;
+            //Displace.y = 0;
             GetComponent<Rigidbody>().AddForce(Displace.normalized * 75);
         }
         else if (hasArrived) // if path complete, start new path
@@ -58,6 +56,7 @@ public class AStar : MonoBehaviour
             grid.SetStartPoint(grid.GetEndPoint()); // old end point is new start point
             grid.DetermineEndPoint(grid.GetStartPoint()); // get a new end point
             path = FindPath(grid.GetStartPoint(), grid.GetEndPoint()); // find a new path
+            //outputPath();
             currentPathNum = 0;
         }
     }
@@ -65,7 +64,9 @@ public class AStar : MonoBehaviour
     public void CanStart()
     {
         grid = gridObject.GetComponent<WorldGrid>();
+        gridMap = grid.GetMap();
         path = FindPath(grid.GetStartPoint(), grid.GetEndPoint());
+        //outputPath();
     }
 
     public void HasReachedGoal()
@@ -119,7 +120,8 @@ public class AStar : MonoBehaviour
             for (int i = 0; i < potentialMoves.Length; i++)
             {
                 WorldGrid.Node currentMove = potentialMoves[i];
-                if (!(currentMove.position.x < 0 || currentMove.position.y < 0 || !currentMove.isAccessible))
+
+                if (currentMove.position.x > 0 && currentMove.position.z > 0 && currentMove.isAccessible)
                 {
                     // get move as end node
                     endNode = currentMove;
@@ -234,9 +236,7 @@ public class AStar : MonoBehaviour
         // create default illegal node
         WorldGrid.Node illegalNode = new WorldGrid.Node(new Vector3(-1, -1, -1));
         illegalNode.isAccessible = false;
-
-        WorldGrid.Node[,] gridMap = grid.GetMap();
-
+        
         // generate possible moves
         moves[0] = indexB > 0 ? gridMap[indexA, indexB - 1] : illegalNode;
         moves[1] = indexA > 0 ? gridMap[indexA - 1, indexB] : illegalNode;
@@ -248,7 +248,7 @@ public class AStar : MonoBehaviour
 
     private double GetEstCost(WorldGrid.Node current, WorldGrid.Node goal)
     {
-        return Mathf.Sqrt(Mathf.Pow((current.position.x - goal.position.x), 2) + Mathf.Pow((current.position.y - goal.position.y), 2)) * 3;
+        return Mathf.Sqrt(Mathf.Pow((current.position.x - goal.position.x), 2) + Mathf.Pow((current.position.z - goal.position.z), 2)) * 3;
     }
 
     public class PriorityQueue // priority queue implementation for use by the AStar script methods, based on the provided priority queue file
@@ -321,6 +321,37 @@ public class AStar : MonoBehaviour
         public void Clear()
         {
             pQueue.Clear();
+        }
+    }
+
+    private void outputPath() //for debugging
+    {
+        string nodePath = "";
+        for (int i = 0; i < path.Count; i++)
+        {
+            WorldGrid.Node n = path[i];
+            
+            if (i == path.Count - 1)//end of path
+            {
+                nodePath += "[" + n.position.x + ", " + n.position.y + ", " + n.position.z + "]";
+            }
+            else
+            {
+                nodePath += "[" + n.position.x + ", " + n.position.y + ", " + n.position.z + "] --> ";
+            }
+        }
+
+        Debug.Log(nodePath);
+    }
+
+    private void drawPath() //for debugging
+    {
+        for (int i = 0; i < path.Count; i++)
+        {
+            if (i != path.Count - 1)//end of path
+            {
+                Debug.DrawLine(path[i].position, path[i + 1].position, Color.red);
+            }
         }
     }
 }

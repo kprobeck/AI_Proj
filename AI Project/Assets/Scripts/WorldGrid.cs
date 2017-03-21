@@ -11,10 +11,10 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     public float representationHeight;
     public GameObject startObject;
     public GameObject pathfinder;
+    public List<Vector3> inaccessibleLocations; // represent positions of nodes that can't be reached
     private Node startPoint;
     private Node endPoint;
     private Node[,] world; // used to represent the x,z node grid
-    List<Vector3> inaccessibleLocations; // represent positions of nodes that can't be reached
     private int arrayDimensionSize;
     private int gridSpacing;
 
@@ -42,11 +42,11 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             {
                 // Populate the world array with Nodes
                 Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing)); // create the current node 
-                
+
                 // create a representation of the node at the node's position
                 GameObject representation = GameObject.Instantiate(cellRepresentation, new Vector3(currentNode.position.x, currentNode.position.y, currentNode.position.z), Quaternion.identity) as GameObject;
 
-                DetermineAccessibility(currentNode);                             
+                currentNode.isAccessible = DetermineAccessibility(currentNode);
                 representation.transform.parent = transform; // assign the parent transform
                 world[j, i] = currentNode; // add node to the world array
             }
@@ -63,11 +63,11 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         do
         {
             endPoint = world[Random.Range(0, arrayDimensionSize - 1), Random.Range(0, arrayDimensionSize - 1)];
-            DetermineAccessibility(endPoint);
+            endPoint.isAccessible = DetermineAccessibility(endPoint);
         }
         while (dist(start, endPoint) < 100 || !endPoint.isAccessible);
 
-        Debug.Log("END POINT: " + endPoint.position);
+        //Debug.Log("END POINT: " + endPoint.position);
     }
 
     public string GetIndexOfValue(Node node)
@@ -143,23 +143,27 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         return (int)Mathf.Ceil(Mathf.Sqrt(Mathf.Pow(a.position.x - b.position.x, 2) + Mathf.Pow(a.position.z - b.position.z, 2)));
     }
 
-    private void DetermineAccessibility(Node n) // set node to inaccessible if it is located in areas that are impossible to reach
-    { 
+    private bool DetermineAccessibility(Node n) // set node to inaccessible if it is located in areas that are impossible to reach
+    {
         if (n.position.x == 0 || n.position.z == 0 || n.position.x == 20 || n.position.z == 20 || inaccessibleLocations.Contains(n.position))
         {
-            n.isAccessible = false;
+            return false;
+        }
+        else
+        {
+            return true;
         }
     }
-    
+
     // node class for use with the world grid
     public class Node
     { // represents a node on the graph of the terrain, based on the priority item file
 
         public Vector3 position { get; set; } // the node's position in the world
         public bool isAccessible { get; set; } // flag if the node can be accessed by the a* AI
+        public int gridCost; // all nodes cost the same if accessible
         private double costSoFar;
         private double estTotalCost;
-        private int gridCost; // all nodes cost the same if accessible
 
         public Node(Vector3 pos)
         {
@@ -195,6 +199,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         public int GridCost
         {
             get { return gridCost; }
+            set { gridCost = value; }
         }
 
         // Method to compare location values of nodes
