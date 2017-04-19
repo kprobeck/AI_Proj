@@ -53,8 +53,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         }
 
         DetermineEndPoint(startPoint);
-        AStar test = pathfinder.GetComponent<AStar>();
-        test.CanStart();
+        //AStar test = pathfinder.GetComponent<AStar>();
+        //test.CanStart();
     }
 
     public void DetermineEndPoint(Node start)
@@ -170,8 +170,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         private double costSoFar;
         private double estTotalCost;
         private InfluenceLevels dominatingInfluence;
-        private List<int> redInfluenceVals;
-        private List<int> greenInfluenceVals;
+        private List<double> redInfluenceVals;
+        private List<double> greenInfluenceVals;
 
         public Node(Vector3 pos)
         {
@@ -194,10 +194,10 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         }
 
         // functions for influence map
-        void AddInflunce(Unit u)
+        public void AddInfluence(Unit u)
         {
-            Vector3 dist = u.position - this.position;
-            double modifiedInfluence = 10 - dist.Magnitude; // TODO: Test and tweak this
+            Vector3 dist = u.transform.position - this.position;
+            double modifiedInfluence = 10 - dist.magnitude; // TODO: Test and tweak this
             if (u.isRedTeam)
             {
                 redInfluenceVals.Add(modifiedInfluence);
@@ -224,12 +224,12 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             }
             else
             {
-                double redTotal, greenTotal;
-                foreach (int rv in redInfluenceVals)
+                double redTotal = 0.0, greenTotal = 0.0;
+                foreach (double rv in redInfluenceVals)
                 {
                     redTotal += rv;
                 }
-                foreach (int gv in greenInfluenceVals)
+                foreach (double gv in greenInfluenceVals)
                 {
                     greenTotal += gv;
                 }

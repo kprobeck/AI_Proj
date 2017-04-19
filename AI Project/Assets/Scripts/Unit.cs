@@ -12,12 +12,12 @@ public class Unit : MonoBehaviour {
     // boolean to see if on red or green team, TRUE = RED, FALSE = GREEN
     public bool isRedTeam;
     public int influenceRadius = 10;
-    public Vector2 location;
+    public Vector3 location;
     public GameObject displayObj;
     public GameObject worldGrid; // reference for the world grid
 
 	// Use this for initialization
-	public Unit(bool isRedTeam, int strength, Vector2 position, GameObject physicalRep) 
+	public Unit(bool isRedTeam, int strength, Vector3 position, GameObject physicalRep) 
     {
         affiliation = strength;
         this.isRedTeam = isRedTeam;
@@ -41,7 +41,7 @@ public class Unit : MonoBehaviour {
     {
         WorldGrid map = worldGrid.GetComponent<WorldGrid>();
         WorldGrid.Node[,] mapNodes = map.GetMap();
-        foreach (Node n in mapNodes)
+        foreach (WorldGrid.Node n in mapNodes)
         {
             if (Mathf.Abs(n.position.x - location.x) <= influenceRadius && Mathf.Abs(n.position.z - location.z) <= influenceRadius)
             {

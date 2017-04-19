@@ -29,6 +29,18 @@ public class WorldInput : MonoBehaviour {
         // TODO: Capture mouse location
         Vector3 mouseLocation;
 
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out hit, 1000))//mouse hit terrain
+        {
+            mouseLocation = hit.point;
+        }
+        else //mouse didnt hit anything
+        {
+            return;
+        }
+
+
         if (Input.GetKeyDown("1")) {
             SpawnUnit(mouseLocation, 1);
             return;
@@ -52,18 +64,31 @@ public class WorldInput : MonoBehaviour {
             return;
         }
 
+        if(Input.GetKeyDown(KeyCode.R))//reset
+        {
+            foreach(Unit u in units)
+            {
+                Debug.Log(u);
+                Destroy(u.gameObject);
+            }
+            units = new List<Unit>();
+        }
+
+        if (Input.GetMouseButtonDown(1) && hit.collider.gameObject.tag == "unit")//right mouse down, remove
+        {
+            units.Remove(hit.collider.gameObject.GetComponent<Unit>());
+            Destroy(hit.collider.gameObject);
+        }
+
         // TODO: Input for switching team to place
     }
 
     void SpawnUnit(Vector3 location, int strength)
     {
-        unitToPlace = new Unit(isPlacingRedTeam, 1, new Vector2(location.x, location.z), unitObject);
+        Debug.Log("spawn: " + strength);
+        unitToPlace = new Unit(isPlacingRedTeam, 1, new Vector3(location.x, location.y + .5f, location.z), unitObject);
         units.Add(unitToPlace);
     }
-
-    // TODO: delete unit function
-
-    // TODO: reset map function
 
     // TODO: create map function
 }

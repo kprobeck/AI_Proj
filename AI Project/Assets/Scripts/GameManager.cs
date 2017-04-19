@@ -89,45 +89,45 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKey(KeyCode.Alpha1) && flockSeekWeight > minValue)
         {
             flockSeekWeight--;
-            Debug.Log("Key 1");
+            //Debug.Log("Key 1");
         }
         if (Input.GetKey(KeyCode.Alpha2) && flockSeekWeight < maxValue)
         {
             flockSeekWeight++;
-            Debug.Log("Key 2");
+            //Debug.Log("Key 2");
         }
 
         if (Input.GetKey(KeyCode.Alpha3) && flockAvoidObstacleWeight > minValue)
         {
             flockAvoidObstacleWeight--;
-            Debug.Log("Key 3");
+            //Debug.Log("Key 3");
         }
         if (Input.GetKey(KeyCode.Alpha4) && flockAvoidObstacleWeight < maxValue)
         {
             flockAvoidObstacleWeight++;
-            Debug.Log("Key 4");
+            //Debug.Log("Key 4");
         }
 
         if (Input.GetKey(KeyCode.Alpha5) && flockSeperationWeight > minValue)
         {
             flockSeperationWeight--;
-            Debug.Log("Key 5");
+            //Debug.Log("Key 5");
         }
         if (Input.GetKey(KeyCode.Alpha6) && flockSeperationWeight < maxValue)
         {
             flockSeperationWeight++;
-            Debug.Log("Key 6");
+            //Debug.Log("Key 6");
         }
 
         if (Input.GetKey(KeyCode.Alpha7) && flockCohesionWeight > minValue)
         {
             flockCohesionWeight--;
-            Debug.Log("Key 7");
+            //Debug.Log("Key 7");
         }
         if (Input.GetKey(KeyCode.Alpha8) && flockCohesionWeight < maxValue)
         {
             flockCohesionWeight++;
-            Debug.Log("Key 8");
+            //Debug.Log("Key 8");
         }
     }
 
