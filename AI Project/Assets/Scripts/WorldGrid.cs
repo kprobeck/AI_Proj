@@ -159,11 +159,19 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     public class Node
     { // represents a node on the graph of the terrain, based on the priority item file
 
+        enum InfluenceLevels
+        {
+            Green, Red, Neutral
+        }
+
         public Vector3 position { get; set; } // the node's position in the world
         public bool isAccessible { get; set; } // flag if the node can be accessed by the a* AI
         public int gridCost; // all nodes cost the same if accessible
         private double costSoFar;
         private double estTotalCost;
+        private InfluenceLevels dominatingInfluence;
+        private List<int> redInfluenceVals;
+        private List<int> greenInfluenceVals;
 
         public Node(Vector3 pos)
         {
@@ -172,6 +180,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             costSoFar = 0.0;
             estTotalCost = 0.0;
             gridCost = 1;
+            dominatingInfluence = InfluenceLevels.Neutral;
         }
 
         public Node(Vector3 pos, bool canAccess)
@@ -181,6 +190,65 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             costSoFar = 0.0;
             estTotalCost = 0.0;
             gridCost = 1;
+            dominatingInfluence = InfluenceLevels.Neutral;
+        }
+
+        // functions for influence map
+        void AddInflunce(Unit u)
+        {
+            Vector3 dist = u.position - this.position;
+            double modifiedInfluence = 10 - dist.Magnitude; // TODO: Test and tweak this
+            if (u.isRedTeam)
+            {
+                redInfluenceVals.Add(modifiedInfluence);
+            }
+            else
+            {
+                greenInfluenceVals.Add(modifiedInfluence);
+            }
+        }
+
+        void GetInfluenceLevel()
+        {
+            if (redInfluenceVals.Count < 1 && greenInfluenceVals.Count < 1)
+            {
+                dominatingInfluence = InfluenceLevels.Neutral;
+            }
+            else if (redInfluenceVals.Count < 1 && greenInfluenceVals.Count > 0)
+            {
+                dominatingInfluence = InfluenceLevels.Green;
+            }
+            else if (redInfluenceVals.Count > 0 && greenInfluenceVals.Count < 1)
+            {
+                dominatingInfluence = InfluenceLevels.Red;
+            }
+            else
+            {
+                double redTotal, greenTotal;
+                foreach (int rv in redInfluenceVals)
+                {
+                    redTotal += rv;
+                }
+                foreach (int gv in greenInfluenceVals)
+                {
+                    greenTotal += gv;
+                }
+
+                if (greenTotal == redTotal)
+                {
+                    dominatingInfluence = InfluenceLevels.Neutral;
+                }
+                else if (greenTotal > redTotal)
+                {
+                    dominatingInfluence = InfluenceLevels.Green;
+                }
+                else if (redTotal > greenTotal)
+                {
+                    dominatingInfluence = InfluenceLevels.Red;
+                }
+            }
+
+            // TODO: Color cell representation
         }
 
         // properties for node costs

@@ -6,32 +6,48 @@ public class Unit : MonoBehaviour {
 
     // properties - TODO: edit if they should be public or not, all public now for testing
         
-        // affiliation, represents the actual influence the unit provides, scale form 1 - 4
+    // affiliation, represents the actual influence the unit provides, scale form 1 - 4
     public int affiliation;
 
-        // boolean to see if on red or green team, TRUE = RED, FALSE = GREEN
+    // boolean to see if on red or green team, TRUE = RED, FALSE = GREEN
     public bool isRedTeam;
-
+    public int influenceRadius = 10;
     public Vector2 location;
-
-
+    public GameObject displayObj;
+    public GameObject worldGrid; // reference for the world grid
 
 	// Use this for initialization
-	void Start () {
-		
-	}
+	public Unit(bool isRedTeam, int strength, Vector2 position, GameObject physicalRep) 
+    {
+        affiliation = strength;
+        this.isRedTeam = isRedTeam;
+        location = position;
+        displayObj = physicalRep;
+        CreateObject();
+    }
 	
 	// Update is called once per frame
 	void Update () {
 		
 	}
+    
+    void CreateObject()
+    {
+        // TODO: either use Vec3 or lock y position
+        GameObject.Instantiate(displayObj, location, Quaternion.identity);
+    }
 
-    // TODO: determineTeam function, checks location to determine what team they are one
-    void determineTeam() {
-        // if locationX is 0 - 4, red
-        isRedTeam = true;
-
-        // if locationX is 5-9, green
-        isRedTeam = false;
+    void GetNodesInRange()
+    {
+        WorldGrid map = worldGrid.GetComponent<WorldGrid>();
+        WorldGrid.Node[,] mapNodes = map.GetMap();
+        foreach (Node n in mapNodes)
+        {
+            if (Mathf.Abs(n.position.x - location.x) <= influenceRadius && Mathf.Abs(n.position.z - location.z) <= influenceRadius)
+            {
+                // if in range add influence
+                n.AddInfluence(this);
+            }
+        } 
     }
 }
