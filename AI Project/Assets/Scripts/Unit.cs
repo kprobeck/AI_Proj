@@ -17,7 +17,7 @@ public class Unit : MonoBehaviour {
     public GameObject worldGrid; // reference for the world grid
 
 	// Use this for initialization
-	public Unit(bool isRedTeam, int strength, Vector3 position, GameObject physicalRep) 
+	public void InitUnit(bool isRedTeam, int strength, Vector3 position, GameObject physicalRep) 
     {
         affiliation = strength;
         this.isRedTeam = isRedTeam;
@@ -37,7 +37,7 @@ public class Unit : MonoBehaviour {
         GameObject.Instantiate(displayObj, location, Quaternion.identity);
     }
 
-    void GetNodesInRange()
+    public void GetNodesInRange()
     {
         WorldGrid map = worldGrid.GetComponent<WorldGrid>();
         WorldGrid.Node[,] mapNodes = map.GetMap();

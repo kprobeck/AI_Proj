@@ -16,8 +16,8 @@ public class WorldInput : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-
-	}
+        units = new List<Unit>();
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -66,12 +66,14 @@ public class WorldInput : MonoBehaviour {
 
         if(Input.GetKeyDown(KeyCode.R))//reset
         {
-            foreach(Unit u in units)
-            {
-                Debug.Log(u);
-                Destroy(u.gameObject);
-            }
-            units = new List<Unit>();
+            // TODO: Debug this -- Noah
+            //Unit[] onScreenUnits = gameObject.GetComponents<Unit>();
+            //foreach (Unit u in onScreenUnits)
+            //{
+            //    Destroy(u);
+            //}
+
+            //units = new List<Unit>();
         }
 
         if (Input.GetMouseButtonDown(1) && hit.collider.gameObject.tag == "unit")//right mouse down, remove
@@ -80,15 +82,32 @@ public class WorldInput : MonoBehaviour {
             Destroy(hit.collider.gameObject);
         }
 
-        // TODO: Input for switching team to place
+        // Input for switching team to place
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            isPlacingRedTeam = !isPlacingRedTeam;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            ShowMap();
+        }
     }
 
     void SpawnUnit(Vector3 location, int strength)
     {
         Debug.Log("spawn: " + strength);
-        unitToPlace = new Unit(isPlacingRedTeam, 1, new Vector3(location.x, location.y + .5f, location.z), unitObject);
+        unitToPlace = gameObject.AddComponent<Unit>();
+        unitToPlace.InitUnit(isPlacingRedTeam, 1, new Vector3(location.x, location.y + .5f, location.z), unitObject);
         units.Add(unitToPlace);
     }
 
-    // TODO: create map function
+    // create map function
+    void ShowMap()
+    {
+        foreach (Unit u in units)
+        {
+            u.GetNodesInRange();
+        }
+    }
 }

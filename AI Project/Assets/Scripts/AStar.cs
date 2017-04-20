@@ -234,7 +234,7 @@ public class AStar : MonoBehaviour
         int indexB = int.Parse(indicesStrs[1]);
 
         // create default illegal node
-        WorldGrid.Node illegalNode = new WorldGrid.Node(new Vector3(-1, -1, -1));
+        WorldGrid.Node illegalNode = new WorldGrid.Node(new Vector3(-1, -1, -1), grid);
         illegalNode.isAccessible = false;
         
         // generate possible moves

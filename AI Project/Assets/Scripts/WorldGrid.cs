@@ -12,6 +12,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     public GameObject startObject;
     public GameObject pathfinder;
     public List<Vector3> inaccessibleLocations; // represent positions of nodes that can't be reached
+    public Dictionary<Vector3, GameObject> cells;
     private Node startPoint;
     private Node endPoint;
     private Node[,] world; // used to represent the x,z node grid
@@ -26,7 +27,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
 
         // initialize map array size
         world = new Node[arrayDimensionSize, arrayDimensionSize];
-        startPoint = new Node(new Vector3(startObject.transform.position.x, representationHeight, startObject.transform.position.z));
+        startPoint = new Node(new Vector3(startObject.transform.position.x, representationHeight, startObject.transform.position.z), this);
+        cells = new Dictionary<Vector3, GameObject>();
 
         GetInaccessibleNodeList();
 
@@ -41,10 +43,11 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             for (int j = 0; j < arrayDimensionSize; j++)
             {
                 // Populate the world array with Nodes
-                Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing)); // create the current node 
+                Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing), this); // create the current node 
 
                 // create a representation of the node at the node's position
                 GameObject representation = GameObject.Instantiate(cellRepresentation, new Vector3(currentNode.position.x, currentNode.position.y, currentNode.position.z), Quaternion.identity) as GameObject;
+                cells.Add(currentNode.position, representation);
 
                 currentNode.isAccessible = DetermineAccessibility(currentNode);
                 representation.transform.parent = transform; // assign the parent transform
@@ -167,13 +170,14 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         public Vector3 position { get; set; } // the node's position in the world
         public bool isAccessible { get; set; } // flag if the node can be accessed by the a* AI
         public int gridCost; // all nodes cost the same if accessible
+        private WorldGrid gridRef;
         private double costSoFar;
         private double estTotalCost;
         private InfluenceLevels dominatingInfluence;
         private List<double> redInfluenceVals;
         private List<double> greenInfluenceVals;
 
-        public Node(Vector3 pos)
+        public Node(Vector3 pos, WorldGrid grid)
         {
             position = pos;
             isAccessible = true;
@@ -181,6 +185,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             estTotalCost = 0.0;
             gridCost = 1;
             dominatingInfluence = InfluenceLevels.Neutral;
+            gridRef = grid;
         }
 
         public Node(Vector3 pos, bool canAccess)
@@ -248,7 +253,18 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
                 }
             }
 
-            // TODO: Color cell representation
+            // get cell in scene
+            GameObject cell = gridRef.cells[position];
+            Debug.Log("Cell at: " + position + " influence of " + dominatingInfluence.ToString());
+            switch (dominatingInfluence) // TODO: Color cell representation
+            {
+                case InfluenceLevels.Green:
+                    break;
+                case InfluenceLevels.Red:
+                    break;
+                case InfluenceLevels.Neutral:
+                    break;
+            }
         }
 
         // properties for node costs
