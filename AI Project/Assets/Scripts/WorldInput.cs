@@ -98,7 +98,7 @@ public class WorldInput : MonoBehaviour {
     {
         Debug.Log("spawn: " + strength);
         unitToPlace = gameObject.AddComponent<Unit>();
-        unitToPlace.InitUnit(isPlacingRedTeam, 1, new Vector3(location.x, location.y + .5f, location.z), unitObject);
+        unitToPlace.InitUnit(isPlacingRedTeam, strength, new Vector3(location.x, location.y + .5f, location.z), unitObject);
         units.Add(unitToPlace);
     }
 

@@ -35,6 +35,38 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         CreateWorldMap();
     }
 
+    /*
+    // update node colors
+    void Update() {
+
+        for (int i = 0; i < arrayDimensionSize; i++)
+        {
+            for (int j = 0; j < arrayDimensionSize; j++)
+            {
+                // Populate the world array with Nodes
+                Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing), this); // create the current node 
+
+                //TODO: ACCESS GAMEOBJECT OF SPECIFIC NODE, COLOR ACCORDINGLY WITH IF AND ELSE
+
+                // pseudo-code ...
+                /*
+                    if(enum = red)
+                    {
+                        GameObjectOfNodeRepresentation.GetComponent<Renderer>().material = Resources.Load("Red") as Material;
+                    }
+                    else if (enum = green) 
+                    {
+                        GameObjectOfNodeRepresentation.GetComponent<Renderer>().material = Resources.Load("Green") as Material;
+                    }
+
+                //
+                
+            }
+        }
+
+    }
+    */
+
     void CreateWorldMap()
     {
         // cycle through world Node array and place the cell representation at each 
