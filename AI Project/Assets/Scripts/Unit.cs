@@ -23,8 +23,8 @@ public class Unit : MonoBehaviour {
         affiliation = strength;
         this.isRedTeam = isRedTeam;
         location = position;
-        displayObj = physicalRep;
-        CreateObject(strength, position, isRedTeam);
+        //displayObj = physicalRep;
+        //CreateObject(strength, position, isRedTeam);
     }
 	
 	// Update is called once per frame
@@ -55,6 +55,16 @@ public class Unit : MonoBehaviour {
 
         // set color to unit
         this.GetComponent<Renderer>().material = mat;
+
+        //show the team the unit is on
+        if (isRedTeam)
+        {
+            //this.GetComponentInChildren<Renderer>().material = Resources.Load("Red") as Material;
+        }
+        else
+        {
+            //this.GetComponentInChildren<Renderer>().material = Resources.Load("Green") as Material;
+        }
 
     }
     

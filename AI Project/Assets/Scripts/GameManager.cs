@@ -134,11 +134,24 @@ public class GameManager : MonoBehaviour {
     private void textBoxEdit()
     {
         textInfo = "";
-        textInfo += "Seek Weight:    " + flockSeekWeight + "   '1' & '2'" + "\n";
-        textInfo += "Obstacle Avoid: " + flockAvoidObstacleWeight + "   '3' & '4'" + "\n";
-        textInfo += "Seperation:     " + flockSeperationWeight + "   '5' & '6'" + "\n";
-        textInfo += "Cohesion:       " + flockCohesionWeight + "   '7' & '8'" + "\n";
-        textInfo += "'0' to reset values\n";
+        //textInfo += "Seek Weight:    " + flockSeekWeight + "   '1' & '2'" + "\n";
+        //textInfo += "Obstacle Avoid: " + flockAvoidObstacleWeight + "   '3' & '4'" + "\n";
+        //textInfo += "Seperation:     " + flockSeperationWeight + "   '5' & '6'" + "\n";
+        //textInfo += "Cohesion:       " + flockCohesionWeight + "   '7' & '8'" + "\n";
+        //textInfo += "'0' to reset values\n";
+
+        textInfo += "Team Color Selected: ";
+        if (GetComponent<WorldInput>().isPlacingRedTeam)
+        {
+            textBox.GetComponent<Text>().color = Color.red;
+            textInfo += "Red";
+        }
+        else
+        {
+            textBox.GetComponent<Text>().color = Color.green;
+            textInfo += "Green";
+        }
+
         textBox.GetComponent<Text>().text = textInfo;
     }
 }

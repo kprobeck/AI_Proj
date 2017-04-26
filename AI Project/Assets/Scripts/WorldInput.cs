@@ -26,7 +26,7 @@ public class WorldInput : MonoBehaviour {
 
     // see what unit to place based on input, 1, 2, 3, 4 will provide what affiliation to have
     void checkInputs() {
-        // TODO: Capture mouse location
+        //Capture mouse location
         Vector3 mouseLocation;
 
         RaycastHit hit;
@@ -66,14 +66,14 @@ public class WorldInput : MonoBehaviour {
 
         if(Input.GetKeyDown(KeyCode.R))//reset
         {
-            // TODO: Debug this -- Noah
-            //Unit[] onScreenUnits = gameObject.GetComponents<Unit>();
-            //foreach (Unit u in onScreenUnits)
-            //{
-            //    Destroy(u);
-            //}
+            //removes all nodes from maps
+            GameObject[] onScreenUnits = GameObject.FindGameObjectsWithTag("unit");
+            foreach (GameObject u in onScreenUnits)
+            {
+                Destroy(u);
+            }
 
-            //units = new List<Unit>();
+            units = new List<Unit>();
         }
 
         if (Input.GetMouseButtonDown(1) && hit.collider.gameObject.tag == "unit")//right mouse down, remove
@@ -88,7 +88,7 @@ public class WorldInput : MonoBehaviour {
             isPlacingRedTeam = !isPlacingRedTeam;
         }
 
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
             ShowMap();
         }
@@ -97,9 +97,11 @@ public class WorldInput : MonoBehaviour {
     void SpawnUnit(Vector3 location, int strength)
     {
         Debug.Log("spawn: " + strength);
-        unitToPlace = gameObject.AddComponent<Unit>();
-        unitToPlace.InitUnit(isPlacingRedTeam, strength, new Vector3(location.x, location.y + .5f, location.z), unitObject);
-        units.Add(unitToPlace);
+        //unitToPlace = gameObject.AddComponent<Unit>();
+        //unitToPlace.InitUnit(isPlacingRedTeam, strength, new Vector3(location.x, location.y + .5f, location.z), unitObject);
+        //units.Add(unitToPlace);
+        GameObject obj = Instantiate(unitObject, new Vector3(location.x, location.y + .5f, location.z), new Quaternion());
+        obj.GetComponent<Unit>().InitUnit(isPlacingRedTeam, strength, new Vector3(location.x, location.y + .5f, location.z), unitObject);
     }
 
     // create map function
