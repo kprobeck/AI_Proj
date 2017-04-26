@@ -88,7 +88,7 @@ public class WorldInput : MonoBehaviour {
             isPlacingRedTeam = !isPlacingRedTeam;
         }
 
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
         {
             ShowMap();
         }
@@ -107,6 +107,7 @@ public class WorldInput : MonoBehaviour {
     // create map function
     void ShowMap()
     {
+        Debug.Log("show time");
         foreach (Unit u in units)
         {
             u.GetNodesInRange();
