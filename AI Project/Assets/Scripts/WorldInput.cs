@@ -7,16 +7,20 @@ public class WorldInput : MonoBehaviour {
     // properties - TODO: edit if they should be public or not, all public now for testing
 
     // units array, collection of all units in the world
-    public List<Unit> units;
+    public List<GameObject> units;
 
     // unitToPlace, determines what type of unit to place (what their affiliation should be)
     public Unit unitToPlace;
     public GameObject unitObject; // used to define the unit object
     public bool isPlacingRedTeam = true;
+    public WorldGrid.Node[,] mapNodes;
 
     // Use this for initialization
     void Start () {
-        units = new List<Unit>();
+        units = new List<GameObject>();
+        GameObject gridObj = GameObject.FindWithTag("grid");
+        WorldGrid map = gridObj.GetComponent<WorldGrid>();
+        mapNodes = map.GetMap();
     }
 	
 	// Update is called once per frame
@@ -73,12 +77,17 @@ public class WorldInput : MonoBehaviour {
                 Destroy(u);
             }
 
-            units = new List<Unit>();
+            foreach (WorldGrid.Node n in mapNodes)
+            {
+                n.ResetInfluence();
+            }
+
+            units = new List<GameObject>();
         }
 
         if (Input.GetMouseButtonDown(1) && hit.collider.gameObject.tag == "unit")//right mouse down, remove
         {
-            units.Remove(hit.collider.gameObject.GetComponent<Unit>());
+            units.Remove(hit.collider.gameObject);
             Destroy(hit.collider.gameObject);
         }
 
@@ -96,21 +105,26 @@ public class WorldInput : MonoBehaviour {
 
     void SpawnUnit(Vector3 location, int strength)
     {
-        Debug.Log("spawn: " + strength);
+        //Debug.Log("spawn: " + strength);
         //unitToPlace = gameObject.AddComponent<Unit>();
         //unitToPlace.InitUnit(isPlacingRedTeam, strength, new Vector3(location.x, location.y + .5f, location.z), unitObject);
-        //units.Add(unitToPlace);
         GameObject obj = Instantiate(unitObject, new Vector3(location.x, location.y + .5f, location.z), new Quaternion());
         obj.GetComponent<Unit>().InitUnit(isPlacingRedTeam, strength, new Vector3(location.x, location.y + .5f, location.z), unitObject);
+        units.Add(obj);
     }
 
     // create map function
     void ShowMap()
     {
-        Debug.Log("show time");
-        foreach (Unit u in units)
+        //Debug.Log("show time");
+        foreach (GameObject u in units)
         {
-            u.GetNodesInRange();
+            u.GetComponent<Unit>().GetNodesInRange();
+        }
+
+        foreach (WorldGrid.Node n in mapNodes)
+        {
+            n.GetInfluenceLevel();
         }
     }
 }

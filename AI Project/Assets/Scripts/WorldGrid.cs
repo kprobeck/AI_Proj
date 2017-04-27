@@ -217,6 +217,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             estTotalCost = 0.0;
             gridCost = 1;
             dominatingInfluence = InfluenceLevels.Neutral;
+            redInfluenceVals = new List<double>();
+            greenInfluenceVals = new List<double>();
             gridRef = grid;
         }
 
@@ -228,13 +230,15 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             estTotalCost = 0.0;
             gridCost = 1;
             dominatingInfluence = InfluenceLevels.Neutral;
+            redInfluenceVals = new List<double>();
+            greenInfluenceVals = new List<double>();
         }
 
         // functions for influence map
         public void AddInfluence(Unit u)
         {
             Vector3 dist = u.transform.position - this.position;
-            double modifiedInfluence = 10 - dist.magnitude; // TODO: Test and tweak this
+            double modifiedInfluence = Mathf.Abs(10 - dist.magnitude);
             if (u.isRedTeam)
             {
                 redInfluenceVals.Add(modifiedInfluence);
@@ -245,7 +249,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             }
         }
 
-        void GetInfluenceLevel()
+        public void GetInfluenceLevel()
         {
             if (redInfluenceVals.Count < 1 && greenInfluenceVals.Count < 1)
             {
@@ -287,16 +291,27 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
 
             // get cell in scene
             GameObject cell = gridRef.cells[position];
-            Debug.Log("Cell at: " + position + " influence of " + dominatingInfluence.ToString());
+            //Debug.Log("Cell at: " + position + " influence of " + dominatingInfluence.ToString());
             switch (dominatingInfluence) // TODO: Color cell representation
             {
                 case InfluenceLevels.Green:
+                    cell.gameObject.GetComponent<Renderer>().material = Resources.Load("Green") as Material;
                     break;
                 case InfluenceLevels.Red:
+                    cell.gameObject.GetComponent<Renderer>().material = Resources.Load("Red") as Material;
                     break;
                 case InfluenceLevels.Neutral:
+                    cell.gameObject.GetComponent<Renderer>().material = Resources.Load("White") as Material;
                     break;
             }
+        }
+
+        public void ResetInfluence()
+        {
+            GameObject cell = gridRef.cells[position];
+            cell.gameObject.GetComponent<Renderer>().material = Resources.Load("White") as Material;
+            redInfluenceVals.Clear();
+            greenInfluenceVals.Clear();
         }
 
         // properties for node costs

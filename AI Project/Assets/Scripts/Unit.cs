@@ -25,47 +25,19 @@ public class Unit : MonoBehaviour {
         location = position;
         //displayObj = physicalRep;
         //CreateObject(strength, position, isRedTeam);
-    }
-	
-	// Update is called once per frame
-	void Update () {
-
-        // get what color the unit should be
-        switch (affiliation)
-        {
-            case 1:
-                mat = Resources.Load("White") as Material;
-                break;
-
-            case 2:
-                mat = Resources.Load("Blue") as Material;
-                break;
-
-            case 3:
-                mat = Resources.Load("Yellow") as Material;
-                break;
-
-            case 4:
-                mat = Resources.Load("Black") as Material;
-                break;
-
-            default:
-                break;
-        }
-
+        worldGrid = GameObject.FindWithTag("grid");
         // set color to unit
-        this.GetComponent<Renderer>().material = mat;
+        this.GetComponent<Renderer>().material = GetCorrectDisplayMaterial(affiliation);
 
         //show the team the unit is on
         if (isRedTeam)
         {
-            //this.GetComponentInChildren<Renderer>().material = Resources.Load("Red") as Material;
+            this.gameObject.transform.GetChild(0).GetComponent<Renderer>().material = Resources.Load("Red") as Material;
         }
         else
         {
-            //this.GetComponentInChildren<Renderer>().material = Resources.Load("Green") as Material;
+            this.gameObject.transform.GetChild(0).GetComponent<Renderer>().material = Resources.Load("Green") as Material;
         }
-
     }
     
     void CreateObject(int strength, Vector3 pos, bool redTeamorNot)
@@ -95,5 +67,23 @@ public class Unit : MonoBehaviour {
                 n.AddInfluence(this);
             }
         } 
+    }
+
+    private Material GetCorrectDisplayMaterial(int affilNumber)
+    {
+        // get what color the unit should be
+        switch (affilNumber)
+        {
+            case 1:
+                return Resources.Load("White") as Material;
+            case 2:
+                return Resources.Load("Blue") as Material;
+            case 3:
+                return Resources.Load("Yellow") as Material;
+            case 4:
+                return Resources.Load("Black") as Material;
+            default:
+                return null;
+        }
     }
 }

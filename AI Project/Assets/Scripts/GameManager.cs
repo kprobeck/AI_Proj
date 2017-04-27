@@ -9,7 +9,9 @@ public class GameManager : MonoBehaviour {
     private Vector3 flockDirection;
     Vector3 centerOfFlock;
     [SerializeField]
-    GameObject textBox;
+    GameObject textBoxL;
+    [SerializeField]
+    GameObject textBoxR;
     private string textInfo;
 
     public float flockSeekWeight = 50.0f;
@@ -134,24 +136,21 @@ public class GameManager : MonoBehaviour {
     private void textBoxEdit()
     {
         textInfo = "";
-        //textInfo += "Seek Weight:    " + flockSeekWeight + "   '1' & '2'" + "\n";
-        //textInfo += "Obstacle Avoid: " + flockAvoidObstacleWeight + "   '3' & '4'" + "\n";
-        //textInfo += "Seperation:     " + flockSeperationWeight + "   '5' & '6'" + "\n";
-        //textInfo += "Cohesion:       " + flockCohesionWeight + "   '7' & '8'" + "\n";
-        //textInfo += "'0' to reset values\n";
 
         textInfo += "Team Color Selected: ";
         if (GetComponent<WorldInput>().isPlacingRedTeam)
         {
-            textBox.GetComponent<Text>().color = Color.red;
+            textBoxL.GetComponent<Text>().color = Color.red;
             textInfo += "Red";
         }
         else
         {
-            textBox.GetComponent<Text>().color = Color.green;
+            textBoxL.GetComponent<Text>().color = Color.green;
             textInfo += "Green";
         }
 
-        textBox.GetComponent<Text>().text = textInfo;
+        textBoxR.GetComponent<Text>().text = "WASD to move Camera \n Mouse Wheel to Zoom \n  'Q' to switch team to place \n 1, 2, 3, 4 to place unit with that strength at mouse location \n 'R' to clear units and map \n Enter/Space to generate influence map \n Right-Click on a Unit to remove it";
+
+        textBoxL.GetComponent<Text>().text = textInfo;
     }
 }
