@@ -1,5 +1,4 @@
 Load the project in Unity using the 'AI Project' folder.
 Once the project is loaded, load the Scene, named 'World', which is in the 'Assets/Scenes' directory of the project.
 Once the scene is loaded, press the Play button in the top-center of the Unity editor to start up a preview of the current scene.
-The camera will be in first person by default, and the character can be moved using WASD and the mouse.
-You can toggle between first-person view, a world view, and a 3rd person view with the 'C' key.
+The controls are in the UI!

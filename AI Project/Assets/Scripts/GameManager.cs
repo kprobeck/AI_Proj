@@ -9,7 +9,9 @@ public class GameManager : MonoBehaviour {
     private Vector3 flockDirection;
     Vector3 centerOfFlock;
     [SerializeField]
-    GameObject textBox;
+    GameObject textBoxL;
+    [SerializeField]
+    GameObject textBoxR;
     private string textInfo;
 
     public float flockSeekWeight = 50.0f;
@@ -89,56 +91,66 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKey(KeyCode.Alpha1) && flockSeekWeight > minValue)
         {
             flockSeekWeight--;
-            Debug.Log("Key 1");
+            //Debug.Log("Key 1");
         }
         if (Input.GetKey(KeyCode.Alpha2) && flockSeekWeight < maxValue)
         {
             flockSeekWeight++;
-            Debug.Log("Key 2");
+            //Debug.Log("Key 2");
         }
 
         if (Input.GetKey(KeyCode.Alpha3) && flockAvoidObstacleWeight > minValue)
         {
             flockAvoidObstacleWeight--;
-            Debug.Log("Key 3");
+            //Debug.Log("Key 3");
         }
         if (Input.GetKey(KeyCode.Alpha4) && flockAvoidObstacleWeight < maxValue)
         {
             flockAvoidObstacleWeight++;
-            Debug.Log("Key 4");
+            //Debug.Log("Key 4");
         }
 
         if (Input.GetKey(KeyCode.Alpha5) && flockSeperationWeight > minValue)
         {
             flockSeperationWeight--;
-            Debug.Log("Key 5");
+            //Debug.Log("Key 5");
         }
         if (Input.GetKey(KeyCode.Alpha6) && flockSeperationWeight < maxValue)
         {
             flockSeperationWeight++;
-            Debug.Log("Key 6");
+            //Debug.Log("Key 6");
         }
 
         if (Input.GetKey(KeyCode.Alpha7) && flockCohesionWeight > minValue)
         {
             flockCohesionWeight--;
-            Debug.Log("Key 7");
+            //Debug.Log("Key 7");
         }
         if (Input.GetKey(KeyCode.Alpha8) && flockCohesionWeight < maxValue)
         {
             flockCohesionWeight++;
-            Debug.Log("Key 8");
+            //Debug.Log("Key 8");
         }
     }
 
     private void textBoxEdit()
     {
         textInfo = "";
-        textInfo += "Seek Weight:    " + flockSeekWeight + "   '1' & '2'" + "\n";
-        textInfo += "Obstacle Avoid: " + flockAvoidObstacleWeight + "   '3' & '4'" + "\n";
-        textInfo += "Seperation:     " + flockSeperationWeight + "   '5' & '6'" + "\n";
-        textInfo += "Cohesion:       " + flockCohesionWeight + "   '7' & '8'" + "\n";
-        textInfo += "'0' to reset values\n";
-        textBox.GetComponent<Text>().text = textInfo;
+
+        textInfo += "Team Color Selected: ";
+        if (GetComponent<WorldInput>().isPlacingRedTeam)
+        {
+            textBoxL.GetComponent<Text>().color = Color.red;
+            textInfo += "Red";
+        }
+        else
+        {
+            textBoxL.GetComponent<Text>().color = Color.green;
+            textInfo += "Green";
+        }
+
+        textBoxR.GetComponent<Text>().text = "WASD to move Camera \n Mouse Wheel to Zoom \n  'Q' to switch team to place \n 1, 2, 3, 4 to place unit with that strength at mouse location \n 'R' to clear units and map \n Enter/Space to generate influence map \n Right-Click on a Unit to remove it";
+
+        textBoxL.GetComponent<Text>().text = textInfo;
     }
 }

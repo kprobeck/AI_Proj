@@ -12,6 +12,7 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     public GameObject startObject;
     public GameObject pathfinder;
     public List<Vector3> inaccessibleLocations; // represent positions of nodes that can't be reached
+    public Dictionary<Vector3, GameObject> cells;
     private Node startPoint;
     private Node endPoint;
     private Node[,] world; // used to represent the x,z node grid
@@ -26,12 +27,45 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
 
         // initialize map array size
         world = new Node[arrayDimensionSize, arrayDimensionSize];
-        startPoint = new Node(new Vector3(startObject.transform.position.x, representationHeight, startObject.transform.position.z));
+        startPoint = new Node(new Vector3(startObject.transform.position.x, representationHeight, startObject.transform.position.z), this);
+        cells = new Dictionary<Vector3, GameObject>();
 
         GetInaccessibleNodeList();
 
         CreateWorldMap();
     }
+
+    /*
+    // update node colors
+    void Update() {
+
+        for (int i = 0; i < arrayDimensionSize; i++)
+        {
+            for (int j = 0; j < arrayDimensionSize; j++)
+            {
+                // Populate the world array with Nodes
+                Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing), this); // create the current node 
+
+                //TODO: ACCESS GAMEOBJECT OF SPECIFIC NODE, COLOR ACCORDINGLY WITH IF AND ELSE
+
+                // pseudo-code ...
+                /*
+                    if(enum = red)
+                    {
+                        GameObjectOfNodeRepresentation.GetComponent<Renderer>().material = Resources.Load("Red") as Material;
+                    }
+                    else if (enum = green) 
+                    {
+                        GameObjectOfNodeRepresentation.GetComponent<Renderer>().material = Resources.Load("Green") as Material;
+                    }
+
+                //
+                
+            }
+        }
+
+    }
+    */
 
     void CreateWorldMap()
     {
@@ -41,10 +75,11 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             for (int j = 0; j < arrayDimensionSize; j++)
             {
                 // Populate the world array with Nodes
-                Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing)); // create the current node 
+                Node currentNode = new Node(new Vector3(i * gridSpacing, representationHeight, j * gridSpacing), this); // create the current node 
 
                 // create a representation of the node at the node's position
                 GameObject representation = GameObject.Instantiate(cellRepresentation, new Vector3(currentNode.position.x, currentNode.position.y, currentNode.position.z), Quaternion.identity) as GameObject;
+                cells.Add(currentNode.position, representation);
 
                 currentNode.isAccessible = DetermineAccessibility(currentNode);
                 representation.transform.parent = transform; // assign the parent transform
@@ -53,8 +88,8 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
         }
 
         DetermineEndPoint(startPoint);
-        AStar test = pathfinder.GetComponent<AStar>();
-        test.CanStart();
+        //AStar test = pathfinder.GetComponent<AStar>();
+        //test.CanStart();
     }
 
     public void DetermineEndPoint(Node start)
@@ -159,19 +194,32 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
     public class Node
     { // represents a node on the graph of the terrain, based on the priority item file
 
+        enum InfluenceLevels
+        {
+            Green, Red, Neutral
+        }
+
         public Vector3 position { get; set; } // the node's position in the world
         public bool isAccessible { get; set; } // flag if the node can be accessed by the a* AI
         public int gridCost; // all nodes cost the same if accessible
+        private WorldGrid gridRef;
         private double costSoFar;
         private double estTotalCost;
+        private InfluenceLevels dominatingInfluence;
+        private List<double> redInfluenceVals;
+        private List<double> greenInfluenceVals;
 
-        public Node(Vector3 pos)
+        public Node(Vector3 pos, WorldGrid grid)
         {
             position = pos;
             isAccessible = true;
             costSoFar = 0.0;
             estTotalCost = 0.0;
             gridCost = 1;
+            dominatingInfluence = InfluenceLevels.Neutral;
+            redInfluenceVals = new List<double>();
+            greenInfluenceVals = new List<double>();
+            gridRef = grid;
         }
 
         public Node(Vector3 pos, bool canAccess)
@@ -181,6 +229,89 @@ public class WorldGrid : MonoBehaviour // represents the grid of nodes in the te
             costSoFar = 0.0;
             estTotalCost = 0.0;
             gridCost = 1;
+            dominatingInfluence = InfluenceLevels.Neutral;
+            redInfluenceVals = new List<double>();
+            greenInfluenceVals = new List<double>();
+        }
+
+        // functions for influence map
+        public void AddInfluence(Unit u)
+        {
+            Vector3 dist = u.transform.position - this.position;
+            double modifiedInfluence = Mathf.Abs(10 - dist.magnitude);
+            if (u.isRedTeam)
+            {
+                redInfluenceVals.Add(modifiedInfluence);
+            }
+            else
+            {
+                greenInfluenceVals.Add(modifiedInfluence);
+            }
+        }
+
+        public void GetInfluenceLevel()
+        {
+            if (redInfluenceVals.Count < 1 && greenInfluenceVals.Count < 1)
+            {
+                dominatingInfluence = InfluenceLevels.Neutral;
+            }
+            else if (redInfluenceVals.Count < 1 && greenInfluenceVals.Count > 0)
+            {
+                dominatingInfluence = InfluenceLevels.Green;
+            }
+            else if (redInfluenceVals.Count > 0 && greenInfluenceVals.Count < 1)
+            {
+                dominatingInfluence = InfluenceLevels.Red;
+            }
+            else
+            {
+                double redTotal = 0.0, greenTotal = 0.0;
+                foreach (double rv in redInfluenceVals)
+                {
+                    redTotal += rv;
+                }
+                foreach (double gv in greenInfluenceVals)
+                {
+                    greenTotal += gv;
+                }
+
+                if (greenTotal == redTotal)
+                {
+                    dominatingInfluence = InfluenceLevels.Neutral;
+                }
+                else if (greenTotal > redTotal)
+                {
+                    dominatingInfluence = InfluenceLevels.Green;
+                }
+                else if (redTotal > greenTotal)
+                {
+                    dominatingInfluence = InfluenceLevels.Red;
+                }
+            }
+
+            // get cell in scene
+            GameObject cell = gridRef.cells[position];
+            //Debug.Log("Cell at: " + position + " influence of " + dominatingInfluence.ToString());
+            switch (dominatingInfluence) // TODO: Color cell representation
+            {
+                case InfluenceLevels.Green:
+                    cell.gameObject.GetComponent<Renderer>().material = Resources.Load("Green") as Material;
+                    break;
+                case InfluenceLevels.Red:
+                    cell.gameObject.GetComponent<Renderer>().material = Resources.Load("Red") as Material;
+                    break;
+                case InfluenceLevels.Neutral:
+                    cell.gameObject.GetComponent<Renderer>().material = Resources.Load("White") as Material;
+                    break;
+            }
+        }
+
+        public void ResetInfluence()
+        {
+            GameObject cell = gridRef.cells[position];
+            cell.gameObject.GetComponent<Renderer>().material = Resources.Load("White") as Material;
+            redInfluenceVals.Clear();
+            greenInfluenceVals.Clear();
         }
 
         // properties for node costs
